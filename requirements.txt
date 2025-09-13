@@ -8,3 +8,5 @@ tensorboard>=2.12
 black
 ruff
 typing-extensions
+tqdm
+pandas
