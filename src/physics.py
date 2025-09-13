@@ -52,6 +52,16 @@ class PhysicsProblem(ABC):
         """
         pass
 
+    @abstractmethod
+    def initial_loss(self, model: tf.keras.Model, initial_points: tf.Tensor) -> tf.Tensor:
+        """Calcula la pérdida en la condición inicial."""
+        pass
+
+    @abstractmethod
+    def boundary_loss(self, model: tf.keras.Model, boundary_points: tf.Tensor) -> tf.Tensor:
+        """Calcula la pérdida en las condiciones de borde."""
+        pass
+
 # --- Implementaciones de Problemas Físicos Específicos ---
 
 class SimpleHarmonicOscillator(PhysicsProblem):
@@ -76,8 +86,25 @@ class SimpleHarmonicOscillator(PhysicsProblem):
         # Residuo de la EDO
         residual = x_tt + (self.omega**2) * x
         return residual
+    
+    def initial_loss(self, model: tf.keras.Model, t0: tf.Tensor) -> tf.Tensor:
+        x0_true = tf.constant(self.physics_config['initial_conditions']['x0'], dtype=tf.float32)
+        v0_true = tf.constant(self.physics_config['initial_conditions']['v0'], dtype=tf.float32)
+        
+        with tf.GradientTape() as tape:
+            tape.watch(t0)
+            x0_pred = model(t0)
+        v0_pred = tape.gradient(x0_pred, t0)
+        
+        loss_x0 = tf.reduce_mean(tf.square(x0_pred - x0_true))
+        loss_v0 = tf.reduce_mean(tf.square(v0_pred - v0_true))
+        return loss_x0 + loss_v0
 
-class DampedHarmonicOscillator(PhysicsProblem):
+    def boundary_loss(self, model: tf.keras.Model, boundary_points: tf.Tensor) -> tf.Tensor:
+        # Los osciladores son problemas de valor inicial, no de borde.
+        return tf.constant(0.0, dtype=tf.float32)
+
+class DampedHarmonicOscillator(SimpleHarmonicOscillator):
     """
     Define el Oscilador Armónico Amortiguado (DHO).
     Ecuación: d²x/dt² + 2ζω(dx/dt) + ω²x = 0
@@ -130,6 +157,27 @@ class WaveEquation1D(PhysicsProblem):
         # Residuo de la EDP
         residual = u_tt - (self.c**2) * u_xx
         return residual
+    
+    def initial_loss(self, model: tf.keras.Model, x_initial: tf.Tensor) -> tf.Tensor:
+        # Condición inicial para u(x, 0) = sin(πx)
+        u_pred = model(x_initial)
+        u_true = tf.sin(np.pi * x_initial[:, 0:1])
+        loss_u = tf.reduce_mean(tf.square(u_pred - u_true))
+        
+        # Condición inicial para la derivada temporal u_t(x, 0) = 0
+        with tf.GradientTape() as tape:
+            tape.watch(x_initial)
+            u = model(x_initial)
+        u_t = tape.gradient(u, x_initial)[:, 1:2]
+        loss_ut = tf.reduce_mean(tf.square(u_t))
+        
+        return loss_u + loss_ut
+
+    def boundary_loss(self, model: tf.keras.Model, t_boundary: tf.Tensor) -> tf.Tensor:
+        # Condiciones de borde u(0,t)=0 y u(1,t)=0
+        u_pred = model(t_boundary)
+        loss_boundary = tf.reduce_mean(tf.square(u_pred))
+        return loss_boundary
 
 # --- Fábrica de Problemas Físicos ---
 
