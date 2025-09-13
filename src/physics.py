@@ -8,6 +8,27 @@ calcular el residuo de su ecuación diferencial usando diferenciación automáti
 con TensorFlow.
 """
 
+'''''
+Importante para el training:
+physics.py (Define la Regla Física)
+
+    El trabajo de este archivo es crear un método como pde_residual().
+    Este método toma el modelo y unos puntos, y devuelve un tensor con los residuos de la ecuación. 
+    Es decir, devuelve un conjunto de números que deberían ser cero si el modelo fuera perfecto.
+    En resumen: physics.py le entrega al Trainer un reporte de "errores físicos".
+
+training.py (Calcula el Costo)
+
+    El Trainer recibirá un objeto creado a partir de una clase de physics.py (por ejemplo, un objeto SimpleHarmonicOscillator).
+    Dentro de su bucle de entrenamiento, el Trainer llamará al método physics_object.pde_residual().
+    Luego, el Trainer tomará ese "reporte de errores" (el tensor de residuos) y lo convertirá en un solo número: la pérdida (o costo). Típicamente, lo hace calculando el error cuadrático medio.
+
+    # Esta lógica vive dentro del Trainer en training.py
+residual = self.physics_problem.pde_residual(self.model, points)
+loss_pde = tf.reduce_mean(tf.square(residual)) # <--- Aquí se calcula el costo
+
+'''''
+
 import tensorflow as tf
 from abc import ABC, abstractmethod
 from typing import Dict, Any
