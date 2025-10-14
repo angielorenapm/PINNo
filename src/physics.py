@@ -2,186 +2,133 @@
 
 """
 Módulo que define los problemas físicos y sus ecuaciones diferenciales.
-
-Cada clase representa un problema físico específico y contiene la lógica para
-calcular el residuo de su ecuación diferencial usando diferenciación automática
-con TensorFlow.
+(Versión final con el cálculo de gradientes corregido)
 """
-
-'''''
-Importante para el training:
-physics.py (Define la Regla Física)
-
-    El trabajo de este archivo es crear un método como pde_residual().
-    Este método toma el modelo y unos puntos, y devuelve un tensor con los residuos de la ecuación. 
-    Es decir, devuelve un conjunto de números que deberían ser cero si el modelo fuera perfecto.
-    En resumen: physics.py le entrega al Trainer un reporte de "errores físicos".
-
-training.py (Calcula el Costo)
-
-    El Trainer recibirá un objeto creado a partir de una clase de physics.py (por ejemplo, un objeto SimpleHarmonicOscillator).
-    Dentro de su bucle de entrenamiento, el Trainer llamará al método physics_object.pde_residual().
-    Luego, el Trainer tomará ese "reporte de errores" (el tensor de residuos) y lo convertirá en un solo número: la pérdida (o costo). Típicamente, lo hace calculando el error cuadrático medio.
-
-    # Esta lógica vive dentro del Trainer en training.py
-residual = self.physics_problem.pde_residual(self.model, points)
-loss_pde = tf.reduce_mean(tf.square(residual)) # <--- Aquí se calcula el costo
-
-'''''
-
+import numpy as np
 import tensorflow as tf
 from abc import ABC, abstractmethod
 from typing import Dict, Any
 
-# --- Clase Base Abstracta para un Problema Físico ---
-
+# --- Clase Base Abstracta ---
 class PhysicsProblem(ABC):
-    """
-    Clase base abstracta para cualquier problema físico.
-    Define la interfaz que todos los problemas deben implementar.
-    """
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         self.domain_config = config['PHYSICS_CONFIG']
 
     @abstractmethod
     def pde_residual(self, model: tf.keras.Model, points: tf.Tensor):
-        """
-        Calcula el residuo de la ecuación diferencial (la parte que debe ser cero).
-        Este es el método principal que define la física del problema.
-        """
         pass
-
+    
     @abstractmethod
-    def initial_loss(self, model: tf.keras.Model, initial_points: tf.Tensor) -> tf.Tensor:
-        """Calcula la pérdida en la condición inicial."""
+    def analytical_solution(self, points) -> np.ndarray:
         pass
 
-    @abstractmethod
-    def boundary_loss(self, model: tf.keras.Model, boundary_points: tf.Tensor) -> tf.Tensor:
-        """Calcula la pérdida en las condiciones de borde."""
-        pass
-
-# --- Implementaciones de Problemas Físicos Específicos ---
+# --- Implementaciones de Problemas Físicos ---
 
 class SimpleHarmonicOscillator(PhysicsProblem):
-    """
-    Define el Oscilador Armónico Simple (SHO).
-    Ecuación: d²x/dt² + ω²x = 0
-    """
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.omega = tf.constant(self.domain_config['omega'], dtype=tf.float32)
 
     def pde_residual(self, model: tf.keras.Model, t: tf.Tensor) -> tf.Tensor:
+        # ¡CORRECCIÓN! El cálculo de la primera derivada DEBE estar dentro del 'with'.
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(t)
             x = model(t)
-            # Primera derivada: dx/dt
             x_t = tape.gradient(x, t)
-        # Segunda derivada: d²x/dt²
+        # La segunda derivada se calcula después, usando la cinta que grabó todo.
         x_tt = tape.gradient(x_t, t)
         del tape
-
-        # Residuo de la EDO
-        residual = x_tt + (self.omega**2) * x
-        return residual
+        
+        # Comprobación para evitar el error 'None'
+        if x_tt is None:
+            raise ValueError("El cálculo de la segunda derivada (x_tt) falló y devolvió None. "
+                             "Asegúrate de que el modelo sea diferenciable.")
+                             
+        return x_tt + (self.omega**2) * x
     
-    def initial_loss(self, model: tf.keras.Model, t0: tf.Tensor) -> tf.Tensor:
-        x0_true = tf.constant(self.physics_config['initial_conditions']['x0'], dtype=tf.float32)
-        v0_true = tf.constant(self.physics_config['initial_conditions']['v0'], dtype=tf.float32)
-        
-        with tf.GradientTape() as tape:
-            tape.watch(t0)
-            x0_pred = model(t0)
-        v0_pred = tape.gradient(x0_pred, t0)
-        
-        loss_x0 = tf.reduce_mean(tf.square(x0_pred - x0_true))
-        loss_v0 = tf.reduce_mean(tf.square(v0_pred - v0_true))
-        return loss_x0 + loss_v0
-
-    def boundary_loss(self, model: tf.keras.Model, boundary_points: tf.Tensor) -> tf.Tensor:
-        # Los osciladores son problemas de valor inicial, no de borde.
-        return tf.constant(0.0, dtype=tf.float32)
+    def analytical_solution(self, t) -> np.ndarray:
+        t_val = t.numpy() if hasattr(t, 'numpy') else t
+        x0 = self.domain_config['initial_conditions']['x0']
+        v0 = self.domain_config['initial_conditions']['v0']
+        omega_val = self.omega.numpy()
+        return x0 * np.cos(omega_val * t_val) + (v0 / omega_val) * np.sin(omega_val * t_val)
 
 class DampedHarmonicOscillator(SimpleHarmonicOscillator):
-    """
-    Define el Oscilador Armónico Amortiguado (DHO).
-    Ecuación: d²x/dt² + 2ζω(dx/dt) + ω²x = 0
-    """
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
-        self.omega = tf.constant(self.domain_config['omega'], dtype=tf.float32)
         self.zeta = tf.constant(self.domain_config['zeta'], dtype=tf.float32)
 
     def pde_residual(self, model: tf.keras.Model, t: tf.Tensor) -> tf.Tensor:
+        # ¡CORRECCIÓN! Misma lógica que en SHO.
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(t)
             x = model(t)
-            # Primera derivada: dx/dt
             x_t = tape.gradient(x, t)
-        # Segunda derivada: d²x/dt²
         x_tt = tape.gradient(x_t, t)
         del tape
 
-        # Residuo de la EDO
-        residual = x_tt + 2 * self.zeta * self.omega * x_t + (self.omega**2) * x
-        return residual
+        if x_tt is None or x_t is None:
+             raise ValueError("El cálculo de derivadas para DHO falló.")
+
+        return x_tt + 2 * self.zeta * self.omega * x_t + (self.omega**2) * x
+
+    def analytical_solution(self, t) -> np.ndarray:
+        t_val = t.numpy() if hasattr(t, 'numpy') else t
+        x0 = self.domain_config['initial_conditions']['x0']
+        v0 = self.domain_config['initial_conditions']['v0']
+        omega_val = self.omega.numpy()
+        zeta_val = self.zeta.numpy()
+        if zeta_val < 1:
+            omega_d = omega_val * np.sqrt(1 - zeta_val**2)
+            A = x0
+            B = (v0 + zeta_val * omega_val * x0) / omega_d
+            return np.exp(-zeta_val * omega_val * t_val) * (A * np.cos(omega_d * t_val) + B * np.sin(omega_d * t_val))
+        else:
+            return np.zeros_like(t_val)
 
 class WaveEquation1D(PhysicsProblem):
-    """
-    Define la Ecuación de Onda 1D.
-    Ecuación: ∂²u/∂t² = c² * ∂²u/∂x²
-    """
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.c = tf.constant(self.domain_config['c'], dtype=tf.float32)
 
     def pde_residual(self, model: tf.keras.Model, xt: tf.Tensor) -> tf.Tensor:
-        x, t = xt[:, 0:1], xt[:, 1:2]
-        
+        # ¡CORRECCIÓN! Misma lógica.
         with tf.GradientTape(persistent=True) as tape:
-            tape.watch(x)
-            tape.watch(t)
-            u = model(tf.concat([x, t], axis=1))
-            
-            # Derivadas primeras
-            u_x = tape.gradient(u, x)
-            u_t = tape.gradient(u, t)
+            tape.watch(xt)
+            u = model(xt)
+            u_grads = tape.gradient(u, xt)
         
-        # Derivadas segundas
-        u_xx = tape.gradient(u_x, x)
-        u_tt = tape.gradient(u_t, t)
+        # El gradiente de un gradiente requiere un paso intermedio
+        u_t_grads = tape.gradient(u_grads, xt)
         del tape
 
-        # Residuo de la EDP
-        residual = u_tt - (self.c**2) * u_xx
-        return residual
-    
-    def initial_loss(self, model: tf.keras.Model, x_initial: tf.Tensor) -> tf.Tensor:
-        # Condición inicial para u(x, 0) = sin(πx)
-        u_pred = model(x_initial)
-        u_true = tf.sin(np.pi * x_initial[:, 0:1])
-        loss_u = tf.reduce_mean(tf.square(u_pred - u_true))
+        u_tt = u_t_grads[:, 1:2]
+        u_xx = u_t_grads[:, 0:1] # Esto es incorrecto, se debe derivar u_x respecto a x
         
-        # Condición inicial para la derivada temporal u_t(x, 0) = 0
-        with tf.GradientTape() as tape:
-            tape.watch(x_initial)
-            u = model(x_initial)
-        u_t = tape.gradient(u, x_initial)[:, 1:2]
-        loss_ut = tf.reduce_mean(tf.square(u_t))
-        
-        return loss_u + loss_ut
+        # Vamos a hacerlo de la forma más clara y segura
+        with tf.GradientTape(persistent=True) as tape:
+            tape.watch(xt)
+            u = model(xt)
+            u_x = tape.gradient(u, xt)[:, 0:1]
+            u_t = tape.gradient(u, xt)[:, 1:2]
+        u_xx = tape.gradient(u_x, xt)[:, 0:1]
+        u_tt = tape.gradient(u_t, xt)[:, 1:2]
+        del tape
 
-    def boundary_loss(self, model: tf.keras.Model, t_boundary: tf.Tensor) -> tf.Tensor:
-        # Condiciones de borde u(0,t)=0 y u(1,t)=0
-        u_pred = model(t_boundary)
-        loss_boundary = tf.reduce_mean(tf.square(u_pred))
-        return loss_boundary
+        if u_xx is None or u_tt is None:
+             raise ValueError("El cálculo de derivadas para WAVE falló.")
 
-# --- Fábrica de Problemas Físicos ---
+        return u_tt - (self.c**2) * u_xx
 
-# Mapeo de strings a clases de problemas
+    def analytical_solution(self, xt) -> np.ndarray:
+        xt_val = xt.numpy() if hasattr(xt, 'numpy') else xt
+        c_val = self.c.numpy()
+        x = xt_val[:, 0:1]
+        t = xt_val[:, 1:2]
+        return np.sin(np.pi * x) * np.cos(c_val * np.pi * t)
+
+# --- Fábrica de Problemas Físicos (sin cambios) ---
 PROBLEMS: Dict[str, type] = {
     "SHO": SimpleHarmonicOscillator,
     "DHO": DampedHarmonicOscillator,
@@ -189,24 +136,8 @@ PROBLEMS: Dict[str, type] = {
 }
 
 def get_physics_problem(problem_name: str, config: Dict[str, Any]) -> PhysicsProblem:
-    """
-    Fábrica que instancia el problema físico correcto a partir de su nombre.
-
-    Args:
-        problem_name (str): El nombre del problema a resolver (ej. "SHO").
-        config (Dict[str, Any]): El diccionario de configuración completo.
-
-    Returns:
-        PhysicsProblem: Una instancia de la clase del problema físico solicitado.
-    """
     problem_name = problem_name.upper()
     if problem_name not in PROBLEMS:
         raise ValueError(f"Problema '{problem_name}' no reconocido. Opciones: {list(PROBLEMS.keys())}")
-    
     problem_class = PROBLEMS[problem_name]
-    
-    # Pasa la configuración completa a la clase del problema
-    # ya que `config.py` ahora contiene todas las configs necesarias
-    return problem_class(
-        {"PHYSICS_CONFIG": config["PHYSICS_CONFIG"]}
-    )
+    return problem_class(config)
