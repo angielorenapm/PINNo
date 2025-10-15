@@ -139,7 +139,7 @@ Two options:
 `main.py` intends to call a top-level `run_training()` from `src.training`. If `src.training.main` exists:
 
 ```bash
-python main.py
+python3 gui.py
 ```
 
 This will run the packaged training routine and create a `results/` folder (if not present).
