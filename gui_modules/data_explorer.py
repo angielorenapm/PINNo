@@ -1,6 +1,8 @@
 # gui_modules/data_explorer.py
 """
-Módulo para la pestaña de exploración de datos
+Módulo para la pestaña de exploración de datos - Versión corregida
+- Matriz de correlación se plotea solo al cargar CSV
+- Series temporales se actualizan al cambiar variable Y
 """
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -23,6 +25,7 @@ class DataExplorer(ttk.Frame):
         
         # Variables de UI
         self.y_choice = tk.StringVar(value="Select variable")
+        self._is_plotting = False  # Protección contra múltiples plots
         
         self._build_interface()
         self._setup_event_handlers()
@@ -57,9 +60,6 @@ class DataExplorer(ttk.Frame):
             state="readonly", width=15
         )
         self.y_selector.pack(side=tk.LEFT)
-        
-        ttk.Button(control_frame, text="Plot", 
-                  command=self._plot_current_data).pack(side=tk.LEFT, padx=10)
 
     def _build_attributes_panel(self, parent):
         """Panel de lista de atributos del dataset"""
@@ -106,6 +106,7 @@ class DataExplorer(ttk.Frame):
 
     def _setup_event_handlers(self):
         """Configurar manejadores de eventos"""
+        # Actualizar automáticamente cuando cambia la variable Y
         self.y_selector.bind('<<ComboboxSelected>>', self._on_variable_change)
 
     def _handle_file_open(self):
@@ -123,6 +124,9 @@ class DataExplorer(ttk.Frame):
         self._update_attributes_display(df)
         self._update_variable_selector(df)
         self.info_label.config(text=f"Loaded: {self.data_loader.get_filename()}")
+        
+        # Plotear matriz de correlación SOLO cuando se carga el CSV
+        self._plot_correlation_matrix()
 
     def _update_attributes_display(self, df):
         """Actualizar lista de atributos"""
@@ -136,32 +140,62 @@ class DataExplorer(ttk.Frame):
         self.y_selector['values'] = numeric_cols
         if numeric_cols:
             self.y_choice.set(numeric_cols[0])
+            # Actualizar gráfica de series temporales automáticamente
             self._plot_current_data()
 
-    def _plot_current_data(self):
-        """Generar gráficas con datos actuales"""
+    def _plot_correlation_matrix(self):
+        """Generar matriz de correlación solo una vez al cargar el CSV"""
         df = self.shared_state.get('current_dataframe')
-        if df is None:
-            messagebox.showinfo("No Data", "Please load a CSV file first.")
+        if df is None or df.empty:
             return
+            
+        try:
+            # Solo generar matriz de correlación si hay suficientes columnas numéricas
+            numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+            if len(numeric_cols) >= 2:
+                self.plot_manager.plot_correlation_matrix(df[numeric_cols], self.corr_ax, self.corr_canvas)
+            else:
+                # Limpiar gráfica de correlación si no hay suficientes datos
+                self.corr_ax.clear()
+                self.corr_ax.set_title("Need at least 2 numeric variables")
+                self.corr_canvas.draw()
+        except Exception as e:
+            print(f"Error plotting correlation matrix: {e}")
 
+    def _plot_current_data(self):
+        """Generar solo la gráfica de series temporales - llamada automática al cambiar Y"""
+        # Verificar que tenemos datos
+        df = self.shared_state.get('current_dataframe')
+        if df is None or df.empty:
+            return
+        
+        # Verificar que la columna Y seleccionada existe
         y_col = self.y_choice.get()
         if y_col not in df.columns:
             return
-
-        # Generar gráficas
-        time_col = self.data_loader.detect_time_column(df)
-        self.plot_manager.plot_time_series(df, time_col, y_col, self.ts_ax, self.ts_canvas)
         
-        numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-        if len(numeric_cols) >= 2:
-            self.plot_manager.plot_correlation_matrix(df[numeric_cols], self.corr_ax, self.corr_canvas)
+        # Protección: si ya estamos ploteando, salir
+        if hasattr(self, '_is_plotting') and self._is_plotting:
+            return
+        
+        try:
+            self._is_plotting = True
+            
+            # Generar SOLO la gráfica de series temporales
+            time_col = self.data_loader.detect_time_column(df)
+            self.plot_manager.plot_time_series(df, time_col, y_col, self.ts_ax, self.ts_canvas)
+                
+        except Exception as e:
+            print(f"Error plotting time series: {e}")
+        finally:
+            self._is_plotting = False
 
-    def _on_variable_change(self, event):
-        """Manejar cambio de variable seleccionada"""
-        self._plot_current_data()
+    def _on_variable_change(self, event=None):
+        """Manejar cambio de variable seleccionada - actualización automática"""
+        # Pequeño delay para asegurar que el cambio se ha procesado
+        self.after(100, self._plot_current_data)
 
-    def on_state_change(self, key, value):
+    def on_shared_state_change(self, key, value):
         """Manejar cambios en el estado global"""
         if key == 'current_dataframe' and value is not None:
             self._process_loaded_data(value)
