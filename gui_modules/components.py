@@ -1,4 +1,3 @@
-# gui_modules/components.py
 """
 Componentes reutilizables para la GUI - DataLoader, PlotManager, etc.
 """
@@ -148,12 +147,20 @@ class TrainingVisualizer:
         self.loss_line = None
         self.pred_line = None
         self.true_line = None
+        self._current_colorbar = None
+        self._original_solution_pos = None  # Store original position
 
     def setup_plots(self, parent):
         """Configurar las gráficas de entrenamiento"""
         self.fig = Figure(figsize=(10, 6), dpi=100)
+        
+        # Crear subplots: pérdida arriba, solución abajo
         self.ax_loss = self.fig.add_subplot(2, 1, 1)
         self.ax_solution = self.fig.add_subplot(2, 1, 2)
+        
+        # Store original position for consistent layout
+        self._original_solution_pos = self.ax_solution.get_position()
+        
         self.fig.tight_layout(pad=3.0)
         
         self.canvas = FigureCanvasTkAgg(self.fig, master=parent)
@@ -162,20 +169,24 @@ class TrainingVisualizer:
         self.init_plots()
 
     def init_plots(self):
-        """Inicializar las gráficas"""
+        """Inicializar las gráficas - ONLY called when starting new training"""
+        # Gráfica de pérdida
         self.ax_loss.clear()
         self.ax_loss.set_title("Loss Function vs Epochs")
         self.ax_loss.set_xlabel("Epoch")
         self.ax_loss.set_ylabel("Loss (log scale)")
         self.ax_loss.grid(True, which="both", linestyle='--', linewidth=0.5)
-        self.loss_line, = self.ax_loss.plot([], [], 'b-')
+        self.loss_line, = self.ax_loss.plot([], [], 'b-', linewidth=1.5)
         self.ax_loss.set_yscale('log')
 
+        # Gráfica de solución (inicialmente vacía)
         self.ax_solution.clear()
         self.ax_solution.set_title("Predicted vs Analytical Solution")
         self.ax_solution.grid(True, linestyle='--', linewidth=0.5)
-        self.pred_line, = self.ax_solution.plot([], [], 'b-', label="PINN Prediction")
-        self.true_line, = self.ax_solution.plot([], [], 'r--', label="Analytical Solution")
+        
+        # Inicializar líneas (serán actualizadas según el tipo de problema)
+        self.pred_line, = self.ax_solution.plot([], [], 'b-', label="PINN Prediction", linewidth=2)
+        self.true_line, = self.ax_solution.plot([], [], 'r--', label="Analytical Solution", linewidth=2)
         self.ax_solution.legend()
 
         self.canvas.draw()
@@ -186,16 +197,97 @@ class TrainingVisualizer:
         self.loss_line.set_data(epochs_data, loss_history)
         self.ax_loss.relim()
         self.ax_loss.autoscale_view()
-        self.canvas.draw_idle()  # Actualizar sin bloquear
+        self.canvas.draw_idle()
 
     def update_solution_plot(self, x, y_true, y_pred, xlabel, ylabel):
-        """Actualizar gráfica de solución"""
-        self.pred_line.set_data(x, y_pred)
-        self.true_line.set_data(x, y_true)
+        """Actualizar gráfica de solución para problemas 1D"""
+        # Limpiar y configurar para 1D
+        self.ax_solution.clear()
+        self.ax_solution.grid(True, linestyle='--', linewidth=0.5)
+        
+        # Plotear líneas
+        self.ax_solution.plot(x, y_true, 'r--', label="Analytical Solution", linewidth=2)
+        self.ax_solution.plot(x, y_pred, 'b-', label="PINN Prediction", linewidth=2)
+        
         self.ax_solution.set_xlabel(xlabel)
         self.ax_solution.set_ylabel(ylabel)
+        self.ax_solution.set_title("Predicted vs Analytical Solution")
+        self.ax_solution.legend()
+        
         self.ax_solution.relim()
         self.ax_solution.autoscale_view()
+        self.canvas.draw_idle()
+
+    def update_heat_solution_plot(self, X, T, u_pred, title):
+        """Actualizar gráfica de solución para calor 2D - SINGLE COLORBAR APPROACH"""
+        try:
+            # Clear only the contour, not the entire axis
+            for collection in self.ax_solution.collections:
+                collection.remove()
+            
+            # Create new contour plot
+            contour = self.ax_solution.contourf(X, T, u_pred, levels=20, cmap='hot')
+            
+            # Update or create colorbar
+            if self._current_colorbar is None:
+                # First time: create colorbar
+                self._current_colorbar = self.fig.colorbar(
+                    contour, ax=self.ax_solution, 
+                    label='Temperature (u)',
+                    pad=0.05
+                )
+            else:
+                # Update existing colorbar
+                self._current_colorbar.update_normal(contour)
+            
+            # Configure plot
+            self.ax_solution.set_title(title)
+            self.ax_solution.set_xlabel('x')
+            self.ax_solution.set_ylabel('t')
+            self.ax_solution.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
+            
+            # Set boundaries
+            self.ax_solution.set_xlim(X.min(), X.max())
+            self.ax_solution.set_ylim(T.min(), T.max())
+            
+            self.canvas.draw_idle()
+            
+        except Exception as e:
+            print(f"Error updating heat solution plot: {e}")
+            # Fallback: complete clear and redraw
+            self._safe_clear_solution_plot()
+            contour = self.ax_solution.contourf(X, T, u_pred, levels=20, cmap='hot')
+            self._current_colorbar = self.fig.colorbar(contour, ax=self.ax_solution, label='Temperature (u)')
+            self.ax_solution.set_title(title)
+            self.ax_solution.set_xlabel('x')
+            self.ax_solution.set_ylabel('t')
+            self.canvas.draw_idle()
+
+    def _safe_clear_solution_plot(self):
+        """Safely clear the solution plot without colorbar errors"""
+        # Clear the main axis
+        self.ax_solution.clear()
+        
+        # Safely remove colorbar if it exists
+        if hasattr(self, '_current_colorbar') and self._current_colorbar is not None:
+            try:
+                # Try to remove the colorbar
+                self._current_colorbar.remove()
+            except (AttributeError, ValueError) as e:
+                # If removal fails, just detach the reference
+                pass
+            finally:
+                # Always clear the reference
+                self._current_colorbar = None
+
+    def reset_plots(self):
+        """Reset plots completely - only called when starting new training"""
+        self._safe_clear_solution_plot()
+        
+        # Reset to default state
+        self.ax_solution.set_title("Predicted vs Analytical Solution")
+        self.ax_solution.grid(True, linestyle='--', linewidth=0.5)
+        self.ax_solution.legend()
         self.canvas.draw_idle()
 
 
@@ -265,3 +357,26 @@ class MetricsCalculator:
         lines.append(f"{fn:3d} {tp:2d} | b = HIGH")
 
         return "\n".join(lines)
+
+    def basic_metrics(self, y_true, y_pred):
+        """Métricas básicas de regresión"""
+        n = len(y_true)
+        if n == 0:
+            return {}
+            
+        err = y_pred - y_true
+        mae = float(np.mean(np.abs(err)))
+        mse = float(np.mean(err**2))
+        rmse = float(np.sqrt(mse))
+        
+        # Error relativo
+        y_norm = np.linalg.norm(y_true)
+        relative_error = np.linalg.norm(err) / (y_norm + 1e-12)
+        
+        return {
+            'MAE': mae,
+            'MSE': mse, 
+            'RMSE': rmse,
+            'Relative Error': relative_error,
+            'n_samples': n
+        }

@@ -1,10 +1,11 @@
-# gui_modules/training_tab.py
 """
-Módulo para la pestaña de entrenamiento - Versión simplificada
+Módulo para la pestaña de entrenamiento
 """
 import tkinter as tk
 from tkinter import ttk, messagebox
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from src.config import get_active_config
 from src.training import PINNTrainer
@@ -12,13 +13,14 @@ from gui_modules.components import TrainingVisualizer, MetricsCalculator
 
 
 class TrainingTab(ttk.Frame):
-    """Pestaña de entrenamiento simplificada"""
+    """Pestaña de entrenamiento con conexión a ReportTab"""
     
     def __init__(self, parent, shared_state):
         super().__init__(parent)
         self.shared_state = shared_state
         self.visualizer = TrainingVisualizer()
         self.metrics_calc = MetricsCalculator()
+        self.report_tab_ref = None  # Referencia a ReportTab
         
         self._build_interface()
         self._init_training_state()
@@ -43,7 +45,7 @@ class TrainingTab(ttk.Frame):
         ttk.Label(control_frame, text="Problem:").pack(pady=(0, 5), anchor="w")
         self.problem_selector = ttk.Combobox(
             control_frame, textvariable=self.shared_state['problem_name'],
-            values=["SHO", "DHO", "WAVE"], state="readonly"
+            values=["SHO", "DHO", "HEAT"], state="readonly"
         )
         self.problem_selector.pack(pady=5, fill=tk.X)
 
@@ -101,8 +103,12 @@ class TrainingTab(ttk.Frame):
         self.loss_history = []
 
     def start_training(self):
-        """Iniciar entrenamiento"""
+        """Iniciar entrenamiento - WITH MEMORY INIT"""
         try:
+            # Reset plots only when starting new training
+            self.visualizer.reset_plots()
+            self.visualizer.init_plots()
+            
             self._setup_trainer()
             self._update_ui_for_training_start()
             self._training_loop()
@@ -124,11 +130,17 @@ class TrainingTab(ttk.Frame):
         self.problem_selector.config(state=tk.DISABLED)
         self.epoch = 0
         self.loss_history = []
-        self.visualizer.init_plots()
 
     def stop_training(self):
-        """Detener entrenamiento"""
+        """Detener entrenamiento - PRESERVE FINAL PLOT"""
         self.shared_state['is_training'] = False
+        
+        # DO NOT clear visualization - preserve final plot
+        # Only clear TensorFlow session for memory
+        import tensorflow as tf
+        tf.keras.backend.clear_session()
+        
+        # Update UI
         self.start_btn.config(state=tk.NORMAL)
         self.stop_btn.config(state=tk.DISABLED)
         self.problem_selector.config(state=tk.NORMAL)
@@ -157,21 +169,32 @@ class TrainingTab(ttk.Frame):
             self._handle_training_error(e)
 
     def _update_training_display(self, losses):
-        """Actualizar visualización del entrenamiento"""
-        # Métricas en tiempo real
+        """Actualizar visualización del entrenamiento - OPTIMIZED"""
+        # Lightweight updates every 10 epochs
         if self.epoch % 10 == 0 or self.epoch == 1:
             self.epoch_label.config(text=f"Epoch: {self.epoch}")
             self.loss_label.config(text=f"Loss: {losses[0].numpy():.4e}")
 
-        # Actualizar gráficas y métricas
-        if self.epoch == 1 or self.epoch % 100 == 0:
+        # Medium updates (loss plot) every 100 epochs
+        if self.epoch % 100 == 0:
+            self.visualizer.update_loss_plot(self.epoch, self.loss_history)
+
+        # HEAVY updates (solution plots) with optimized frequency
+        current_problem = self.shared_state['problem_name'].get()
+        if current_problem == "HEAT":
+            update_solution = (self.epoch == 1 or self.epoch % 100 == 0)  # Reduced frequency
+        else:
+            # For ODE problems: update more frequently
+            update_solution = (self.epoch == 1 or self.epoch % 100 == 0)
+            
+        if update_solution:
             self._update_visualizations()
 
     def _update_visualizations(self):
         """Actualizar todas las visualizaciones"""
         trainer = self.shared_state['trainer']
         
-        # Actualizar gráficas
+        # Update loss plot (lightweight)
         self.visualizer.update_loss_plot(self.epoch, self.loss_history)
         
         if hasattr(trainer, 'physics') and hasattr(trainer, 'model'):
@@ -184,8 +207,8 @@ class TrainingTab(ttk.Frame):
         
         if problem in ("SHO", "DHO"):
             self._visualize_ode_solution(trainer)
-        elif problem == "WAVE":
-            self._visualize_pde_solution(trainer)
+        elif problem == "HEAT":
+            self._visualize_heat_solution(trainer)
 
     def _visualize_ode_solution(self, trainer):
         """Visualizar solución de ODE"""
@@ -200,18 +223,39 @@ class TrainingTab(ttk.Frame):
         error = np.linalg.norm(x_pred - x_true) / (np.linalg.norm(x_true) + 1e-8)
         self.error_label.config(text=f"L2 Error: {error:.4f}")
 
-    def _visualize_pde_solution(self, trainer):
-        """Visualizar solución de PDE"""
+    def _visualize_heat_solution(self, trainer):
+        """Visualizar solución de calor 2D - OPTIMIZED WITH BETTER LAYOUT"""
+        # Use consistent resolution for stable layout
+        resolution = 20  # Fixed resolution for consistent performance
+        
         t_slice = 0.5
+        y_slice = 0.5
         x_domain = trainer.config["PHYSICS_CONFIG"]["x_domain"]
-        x_plot = np.linspace(x_domain[0], x_domain[1], 100).reshape(-1, 1)
+        t_domain = trainer.config["PHYSICS_CONFIG"]["t_domain"]
         
-        xt_plot = np.hstack([x_plot, np.full_like(x_plot, t_slice)]).astype(np.float32)
-        u_pred = trainer.model(xt_plot).numpy()
-        u_true = trainer.physics.analytical_solution(xt_plot)
+        # Create optimized grid with exact boundaries
+        x_plot = np.linspace(x_domain[0], x_domain[1], resolution)
+        t_plot = np.linspace(t_domain[0], t_domain[1], resolution)
+        X, T = np.meshgrid(x_plot, t_plot)
         
-        self.visualizer.update_solution_plot(x_plot, u_true, u_pred, "x", f"u(x, t={t_slice})")
+        # Prepare points for prediction - ensure proper ordering
+        xy_flat = np.stack([
+            X.flatten(), 
+            np.full_like(X.flatten(), y_slice), 
+            T.flatten()
+        ], axis=1).astype(np.float32)
         
+        # Batch prediction for better performance
+        u_pred = trainer.model(xy_flat).numpy().reshape(X.shape)
+        
+        # Use the fixed visualizer method with proper boundaries
+        self.visualizer.update_heat_solution_plot(
+            X, T, u_pred, 
+            f"Heat Equation (y={y_slice}) - Epoch {self.epoch}"
+        )
+        
+        # Calculate error for display
+        u_true = trainer.physics.analytical_solution(xy_flat).reshape(X.shape)
         error = np.linalg.norm(u_pred - u_true) / (np.linalg.norm(u_true) + 1e-8)
         self.error_label.config(text=f"L2 Error: {error:.4f}")
 
@@ -225,13 +269,22 @@ class TrainingTab(ttk.Frame):
             y_pred = trainer.model(t_plot).numpy().flatten()
             y_true = trainer.physics.analytical_solution(t_plot).flatten()
             x_data = t_plot
-        else:  # WAVE
+        elif problem == "HEAT":
+            # Para calor, usamos un slice 2D en y fijo con lower resolution for metrics
             x_domain = trainer.config["PHYSICS_CONFIG"]["x_domain"]
-            x_plot = np.linspace(x_domain[0], x_domain[1], 100).reshape(-1, 1)
-            xt_plot = np.hstack([x_plot, np.full_like(x_plot, 0.5)]).astype(np.float32)
-            y_pred = trainer.model(xt_plot).numpy().flatten()
-            y_true = trainer.physics.analytical_solution(xt_plot).flatten()
-            x_data = x_plot
+            t_domain = trainer.config["PHYSICS_CONFIG"]["t_domain"]
+            y_slice = 0.5
+            
+            # Use even lower resolution for metrics calculation
+            x_plot = np.linspace(x_domain[0], x_domain[1], 20)
+            t_plot = np.linspace(t_domain[0], t_domain[1], 20)
+            X, T = np.meshgrid(x_plot, t_plot)
+            xy_flat = np.stack([X.flatten(), np.full_like(X.flatten(), y_slice), T.flatten()], axis=1)
+            xy_flat = xy_flat.astype(np.float32)
+            
+            y_pred = trainer.model(xy_flat).numpy().flatten()
+            y_true = trainer.physics.analytical_solution(xy_flat).flatten()
+            x_data = X.flatten()
 
         # Generar reporte de métricas
         metrics_report = self.metrics_calc.comprehensive_report(y_true, y_pred)
@@ -241,31 +294,28 @@ class TrainingTab(ttk.Frame):
         self.metrics_text.delete("1.0", tk.END)
         self.metrics_text.insert(tk.END, metrics_report)
         self.metrics_text.config(state="disabled")
-    
-        # ACTUALIZACIÓN NUEVA: Actualizar también el report tab
+        
+        # Actualizar también el report tab
         self._update_report_tab(trainer, y_true, y_pred, x_data)
+
+    def _update_report_tab(self, trainer, y_true, y_pred, x_data):
+        """Actualiza la pestaña de reportes con las métricas actuales"""
+        # Calcular métricas para el reporte
+        metrics_report = self.metrics_calc.comprehensive_report(y_true, y_pred)
+        
+        # Actualizar el report tab si existe la referencia
+        if self.report_tab_ref is not None:
+            try:
+                self.report_tab_ref.update_report(metrics_report, (x_data, y_true, y_pred))
+            except Exception as e:
+                print(f"Error updating report tab: {e}")
 
     def _handle_training_error(self, error):
         """Manejar errores de entrenamiento"""
         messagebox.showerror("Training Error", f"Error at epoch {self.epoch}:\n\n{error}")
         self.stop_training()
 
-    def on_state_change(self, key, value):
+    def on_shared_state_change(self, key, value):
         """Manejar cambios de estado global"""
         if key == 'is_training' and not value:
             self.stop_training()
-    
-    def _update_report_tab(self, trainer, y_true, y_pred, x_data):
-        """Actualiza la pestaña de reportes con las métricas actuales"""
-        # Calcular métricas para el reporte
-        metrics_report = self.metrics_calc.comprehensive_report(y_true, y_pred)
-    
-        # Actualizar el report tab a través del estado compartido
-        if hasattr(self, 'shared_state'):
-            # Guardar el reporte en el estado compartido
-            self.shared_state['last_metrics_report'] = metrics_report
-            self.shared_state['last_plot_data'] = (x_data, y_true, y_pred)
-            
-            # Notificar al report tab
-            if hasattr(self, 'report_tab_ref'):
-                self.report_tab_ref.update_report(metrics_report, (x_data, y_true, y_pred))
