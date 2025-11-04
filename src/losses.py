@@ -29,7 +29,7 @@ class LossCalculator:
         self.loss_functions = {
             "SHO": self._compute_sho_losses,
             "DHO": self._compute_sho_losses,  # Misma estructura que SHO
-            "WAVE": self._compute_wave_losses
+            "HEAT": self._compute_heat_losses  # Cambiado de "WAVE" a "HEAT"
         }
 
     def compute_losses(self, model: tf.keras.Model, physics, 
@@ -69,18 +69,18 @@ class LossCalculator:
         
         return total_loss, [loss_pde, loss_initial]
 
-    def _compute_wave_losses(self, model: tf.keras.Model, physics,
+    def _compute_heat_losses(self, model: tf.keras.Model, physics,
                             training_data: Dict[str, tf.Tensor]) -> Tuple[tf.Tensor, List[tf.Tensor]]:
-        """Calcula pérdidas para ecuación de onda"""
-        xt_coll, xt0, xt_b = self._extract_wave_data(training_data)
+        """Calcula pérdidas para la ecuación de calor 2D"""
+        xyt_coll, xyt0, xyt_b = self._extract_heat_data(training_data)
         
         # Pérdida de PDE
-        residual = physics.pde_residual(model, xt_coll)
+        residual = physics.pde_residual(model, xyt_coll)
         loss_pde = tf.reduce_mean(tf.square(residual))
         
         # Pérdidas de condiciones iniciales y de contorno
-        loss_initial = self._initial_loss_wave(model, xt0)
-        loss_boundary = self._boundary_loss_wave(model, xt_b)
+        loss_initial = self._initial_loss_heat(model, xyt0, physics)
+        loss_boundary = self._boundary_loss_heat(model, xyt_b, physics)
         
         # Pérdida total ponderada
         total_loss = (self.loss_weights["pde"] * loss_pde +
@@ -94,12 +94,12 @@ class LossCalculator:
         return (training_data["t_coll"], training_data["t0"], 
                 training_data["x0_true"], training_data["v0_true"])
 
-    def _extract_wave_data(self, training_data: Dict[str, tf.Tensor]):
-        """Extrae datos para problemas de onda"""
-        return (training_data["xt_coll"], training_data["xt0"], 
-                training_data["xt_b"])
+    def _extract_heat_data(self, training_data: Dict[str, tf.Tensor]):
+        """Extrae datos para problemas de calor 2D"""
+        return (training_data["xyt_coll"], training_data["xyt0"], 
+                training_data["xyt_b"])
 
-    # Funciones de pérdida específicas (mantenidas de la versión original)
+    # Funciones de pérdida específicas para SHO/DHO
     def _initial_loss_sho(self, model: tf.keras.Model, t0: tf.Tensor, 
                          x0_true: float, v0_true: float) -> tf.Tensor:
         """Pérdida para condiciones iniciales de SHO"""
@@ -113,22 +113,33 @@ class LossCalculator:
         
         return loss_x0 + loss_v0
 
+    # Funciones de pérdida específicas para HEAT
+    def _initial_loss_heat(self, model: tf.keras.Model, xyt0: tf.Tensor, physics) -> tf.Tensor:
+        """Pérdida para condiciones iniciales de calor 2D"""
+        u_pred = model(xyt0)
+        u_true = physics.analytical_solution(xyt0)
+        return tf.reduce_mean(tf.square(u_pred - u_true))
+
+    def _boundary_loss_heat(self, model: tf.keras.Model, xyt_b: tf.Tensor, physics) -> tf.Tensor:
+        """Pérdida para condiciones de contorno de calor 2D"""
+        u_pred = model(xyt_b)
+        u_true = physics.analytical_solution(xyt_b)
+        return tf.reduce_mean(tf.square(u_pred - u_true))
+
+    # Métodos para WAVE (mantenidos por compatibilidad, pero ya no se usan)
+    def _compute_wave_losses(self, model: tf.keras.Model, physics,
+                            training_data: Dict[str, tf.Tensor]) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        """Método mantenido por compatibilidad, pero ya no se usa"""
+        raise DeprecationWarning("WAVE problem has been replaced by HEAT")
+        
+    def _extract_wave_data(self, training_data: Dict[str, tf.Tensor]):
+        """Método mantenido por compatibilidad, pero ya no se usa"""
+        raise DeprecationWarning("WAVE problem has been replaced by HEAT")
+
     def _initial_loss_wave(self, model: tf.keras.Model, xt0: tf.Tensor) -> tf.Tensor:
-        """Pérdida para condiciones iniciales de onda"""
-        x = xt0[:, 0:1]
-        u_pred = model(xt0)
-        u_true = tf.sin(np.pi * x)
-        loss_u = tf.reduce_mean(tf.square(u_pred - u_true))
-        
-        with tf.GradientTape() as tape:
-            tape.watch(xt0)
-            u = model(xt0)
-        u_t = tape.gradient(u, xt0)[:, 1:2]
-        loss_ut = tf.reduce_mean(tf.square(u_t))
-        
-        return loss_u + loss_ut
+        """Método mantenido por compatibilidad, pero ya no se usa"""
+        raise DeprecationWarning("WAVE problem has been replaced by HEAT")
 
     def _boundary_loss_wave(self, model: tf.keras.Model, xt_b: tf.Tensor) -> tf.Tensor:
-        """Pérdida para condiciones de contorno de onda"""
-        u_b_pred = model(xt_b)
-        return tf.reduce_mean(tf.square(u_b_pred))
+        """Método mantenido por compatibilidad, pero ya no se usa"""
+        raise DeprecationWarning("WAVE problem has been replaced by HEAT")

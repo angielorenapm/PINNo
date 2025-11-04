@@ -2,7 +2,7 @@
 
 """
 Módulo que define los problemas físicos y sus ecuaciones diferenciales.
-(Versión final con el cálculo de gradientes corregido)
+(Versión 0.0.3 - Con ecuación de calor 2D)
 """
 import numpy as np
 import tensorflow as tf
@@ -87,57 +87,86 @@ class DampedHarmonicOscillator(SimpleHarmonicOscillator):
         else:
             return np.zeros_like(t_val)
 
-class WaveEquation1D(PhysicsProblem):
+class HeatEquation2D(PhysicsProblem):
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
-        self.c = tf.constant(self.domain_config['c'], dtype=tf.float32)
+        self.alpha = tf.constant(self.domain_config['alpha'], dtype=tf.float32)
 
-    def pde_residual(self, model: tf.keras.Model, xt: tf.Tensor) -> tf.Tensor:
-        # ¡CORRECCIÓN! Misma lógica.
-        with tf.GradientTape(persistent=True) as tape:
-            tape.watch(xt)
-            u = model(xt)
-            u_grads = tape.gradient(u, xt)
+    def pde_residual(self, model: tf.keras.Model, xyt: tf.Tensor) -> tf.Tensor:
+        """
+        Calcula el residual de la ecuación de calor 2D: u_t - α(∇²u) = 0
         
-        # El gradiente de un gradiente requiere un paso intermedio
-        u_t_grads = tape.gradient(u_grads, xt)
+        Args:
+            model: Modelo de red neuronal
+            xyt: Tensor de forma (batch, 3) con coordenadas [x, y, t]
+            
+        Returns:
+            Tensor: Residual de la PDE
+        """
+        # xyt: tensor de forma (batch, 3) donde [x, y, t]
+        with tf.GradientTape(persistent=True) as tape:
+            tape.watch(xyt)
+            u = model(xyt)
+            # Primeras derivadas
+            u_x = tape.gradient(u, xyt)[:, 0:1]
+            u_y = tape.gradient(u, xyt)[:, 1:2]
+            u_t = tape.gradient(u, xyt)[:, 2:3]
+        
+        # Segundas derivadas
+        u_xx = tape.gradient(u_x, xyt)[:, 0:1]
+        u_yy = tape.gradient(u_y, xyt)[:, 1:2]
         del tape
 
-        u_tt = u_t_grads[:, 1:2]
-        u_xx = u_t_grads[:, 0:1] # Esto es incorrecto, se debe derivar u_x respecto a x
+        # Verificación de que las derivadas se calcularon correctamente
+        if u_xx is None or u_yy is None or u_t is None:
+            raise ValueError("El cálculo de derivadas para HEAT falló.")
+
+        # Ecuación de calor: u_t - alpha * (u_xx + u_yy) = 0
+        return u_t - self.alpha * (u_xx + u_yy)
+
+    def analytical_solution(self, xyt) -> np.ndarray:
+        """
+        Solución analítica para la ecuación de calor 2D con condiciones de contorno cero.
         
-        # Vamos a hacerlo de la forma más clara y segura
-        with tf.GradientTape(persistent=True) as tape:
-            tape.watch(xt)
-            u = model(xt)
-            u_x = tape.gradient(u, xt)[:, 0:1]
-            u_t = tape.gradient(u, xt)[:, 1:2]
-        u_xx = tape.gradient(u_x, xt)[:, 0:1]
-        u_tt = tape.gradient(u_t, xt)[:, 1:2]
-        del tape
+        Para una placa cuadrada [0,1]×[0,1] con condición inicial:
+        u(x,y,0) = sin(πx) * sin(πy)
+        
+        La solución es:
+        u(x,y,t) = exp(-απ²t) * sin(πx) * sin(πy)
+        """
+        xyt_val = xyt.numpy() if hasattr(xyt, 'numpy') else xyt
+        x = xyt_val[:, 0:1]
+        y = xyt_val[:, 1:2] 
+        t = xyt_val[:, 2:3]
+        alpha_val = self.alpha.numpy()
+        
+        # Solución fundamental para condiciones de contorno cero
+        return np.exp(-alpha_val * np.pi**2 * t) * np.sin(np.pi * x) * np.sin(np.pi * y)
 
-        if u_xx is None or u_tt is None:
-             raise ValueError("El cálculo de derivadas para WAVE falló.")
-
-        return u_tt - (self.c**2) * u_xx
-
-    def analytical_solution(self, xt) -> np.ndarray:
-        xt_val = xt.numpy() if hasattr(xt, 'numpy') else xt
-        c_val = self.c.numpy()
-        x = xt_val[:, 0:1]
-        t = xt_val[:, 1:2]
-        return np.sin(np.pi * x) * np.cos(c_val * np.pi * t)
-
-# --- Fábrica de Problemas Físicos (sin cambios) ---
+# --- Fábrica de Problemas Físicos ---
 PROBLEMS: Dict[str, type] = {
     "SHO": SimpleHarmonicOscillator,
     "DHO": DampedHarmonicOscillator,
-    "WAVE": WaveEquation1D
+    "HEAT": HeatEquation2D  # Cambiado de "WAVE" a "HEAT"
 }
 
 def get_physics_problem(problem_name: str, config: Dict[str, Any]) -> PhysicsProblem:
+    """
+    Fábrica de problemas físicos que instancia un problema basado en su nombre.
+    
+    Args:
+        problem_name: Nombre del problema ("SHO", "DHO", "HEAT")
+        config: Configuración del problema
+        
+    Returns:
+        Instancia del problema físico
+        
+    Raises:
+        ValueError: Si el nombre del problema no es reconocido
+    """
     problem_name = problem_name.upper()
     if problem_name not in PROBLEMS:
-        raise ValueError(f"Problema '{problem_name}' no reconocido. Opciones: {list(PROBLEMS.keys())}")
+        valid_problems = list(PROBLEMS.keys())
+        raise ValueError(f"Problema '{problem_name}' no reconocido. Opciones: {valid_problems}")
     problem_class = PROBLEMS[problem_name]
     return problem_class(config)

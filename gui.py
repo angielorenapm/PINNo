@@ -1,4 +1,3 @@
-# gui.py
 """
 Interfaz gráfica principal para PINN Interactive Trainer
 
@@ -159,15 +158,33 @@ class PINNGUI:
                 except Exception as e:
                     print(f"Error notifying tab {tab.__class__.__name__}: {e}")
 
+    def cleanup_memory(self):
+        """Clean up memory between training sessions"""
+        import gc
+        import tensorflow as tf
+        
+        # Clear TensorFlow session
+        tf.keras.backend.clear_session()
+        
+        # Force garbage collection
+        gc.collect()
+        
+        # Clear shared state large arrays
+        if 'current_predictions' in self.shared_state:
+            self.shared_state['current_predictions'] = None
+        if 'current_analytical' in self.shared_state:
+            self.shared_state['current_analytical'] = None
+
     def _safe_shutdown(self):
         """Cierra la aplicación de manera segura, deteniendo cualquier entrenamiento en curso."""
         if self.shared_state.get('is_training', False):
             # Detener el entrenamiento antes de cerrar
             self.shared_state['is_training'] = False
-            self.update_status("Stopping training before shutdown...")
+            self.update_status("Stopping training and cleaning memory...")
+            self.cleanup_memory()
             
             # Esperar un momento para que el entrenamiento se detenga
-            self.root.after(100, self._force_shutdown)
+            self.root.after(500, self._force_shutdown)
         else:
             self._force_shutdown()
 
