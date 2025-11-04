@@ -223,7 +223,7 @@ def launch_gui():
     root = tk.Tk()
     
     # Configuración adicional de la ventana
-    root.minsize(100, 600)
+    root.minsize(1000, 600)
     
     # Crear aplicación
     app = PINNGUI(root)
