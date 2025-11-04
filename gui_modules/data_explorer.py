@@ -97,11 +97,18 @@ class DataExplorer(ttk.Frame):
         # Información del dataset
         self._build_dataset_info(plots_frame)
 
+    # In the _build_dataset_info method, replace or enhance:
     def _build_dataset_info(self, parent):
         """Panel de información del dataset"""
         info_frame = ttk.Labelframe(parent, text="Dataset Info", padding=10)
         info_frame.pack(fill=tk.X, pady=6)
-        self.info_label = ttk.Label(info_frame, text="No dataset loaded")
+        
+        info_text = f"Loaded: {self.data_loader.get_filename()}"
+        if hasattr(self.data_loader, 'has_headers'):
+            header_status = "With headers" if self.data_loader.has_headers else "No headers (auto-named)"
+            info_text += f" | {header_status}"
+        
+        self.info_label = ttk.Label(info_frame, text=info_text)
         self.info_label.pack(anchor="w")
 
     def _setup_event_handlers(self):
@@ -110,11 +117,14 @@ class DataExplorer(ttk.Frame):
         self.y_selector.bind('<<ComboboxSelected>>', self._on_variable_change)
 
     def _handle_file_open(self):
-        """Manejar apertura de archivo CSV"""
+        """Manejar apertura de archivo CSV con diálogos de usuario"""
         try:
             df = self.data_loader.load_csv()
             if df is not None:
-                self._process_loaded_data(df)
+                # Prompt user for column selection/naming
+                df = self.data_loader.prompt_column_selection(self, df)
+                if df is not None:
+                    self._process_loaded_data(df)
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load file:\n\n{e}")
 
@@ -122,8 +132,13 @@ class DataExplorer(ttk.Frame):
         """Procesar datos cargados exitosamente"""
         self.shared_state['current_dataframe'] = df
         self._update_attributes_display(df)
-        self._update_variable_selector(df)
-        self.info_label.config(text=f"Loaded: {self.data_loader.get_filename()}")
+        self._update_variable_selectors(df)
+        
+        # Update info with header status and time column
+        header_status = "with headers" if self.data_loader.has_header_row() else "without headers (user named)"
+        time_col = self.data_loader.get_time_column()
+        info_text = f"Loaded: {self.data_loader.get_filename()} | {header_status} | Time: {time_col}"
+        self.info_label.config(text=info_text)
         
         # Plotear matriz de correlación SOLO cuando se carga el CSV
         self._plot_correlation_matrix()
@@ -134,14 +149,20 @@ class DataExplorer(ttk.Frame):
         for i, col in enumerate(df.columns, 1):
             self.attr_tree.insert("", "end", values=(i, str(col)))
 
-    def _update_variable_selector(self, df):
-        """Actualizar selector de variables"""
+    def _update_variable_selectors(self, df):
+        """Actualizar selectores de variables (time column is now fixed)"""
         numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-        self.y_selector['values'] = numeric_cols
-        if numeric_cols:
-            self.y_choice.set(numeric_cols[0])
+        
+        # Update Y variable selector (exclude time column)
+        time_col = self.data_loader.get_time_column()
+        y_options = [col for col in numeric_cols if col != time_col]
+        self.y_selector['values'] = y_options
+        
+        if y_options:
+            self.y_choice.set(y_options[0])
             # Actualizar gráfica de series temporales automáticamente
             self._plot_current_data()
+
 
     def _plot_correlation_matrix(self):
         """Generar matriz de correlación solo una vez al cargar el CSV"""
@@ -163,7 +184,7 @@ class DataExplorer(ttk.Frame):
             print(f"Error plotting correlation matrix: {e}")
 
     def _plot_current_data(self):
-        """Generar solo la gráfica de series temporales - llamada automática al cambiar Y"""
+        """Generar solo la gráfica de series temporales - usando la columna de tiempo seleccionada"""
         # Verificar que tenemos datos
         df = self.shared_state.get('current_dataframe')
         if df is None or df.empty:
@@ -181,10 +202,15 @@ class DataExplorer(ttk.Frame):
         try:
             self._is_plotting = True
             
-            # Generar SOLO la gráfica de series temporales
-            time_col = self.data_loader.detect_time_column(df)
-            self.plot_manager.plot_time_series(df, time_col, y_col, self.ts_ax, self.ts_canvas)
-                
+            # Usar la columna de tiempo seleccionada por el usuario
+            time_col = self.data_loader.get_time_column()
+            if time_col and time_col in df.columns:
+                self.plot_manager.plot_time_series(df, time_col, y_col, self.ts_ax, self.ts_canvas)
+            else:
+                # Fallback: usar detección automática si no hay columna de tiempo seleccionada
+                time_col = self.data_loader.detect_time_column(df)
+                self.plot_manager.plot_time_series(df, time_col, y_col, self.ts_ax, self.ts_canvas)
+                    
         except Exception as e:
             print(f"Error plotting time series: {e}")
         finally:
