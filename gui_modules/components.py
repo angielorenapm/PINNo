@@ -1,13 +1,17 @@
+#gui_modules/components.py
 """
 Componentes reutilizables para la GUI - DataLoader, PlotManager, etc.
+USING PLOTLY WITH PROPER DIMENSIONS FOR GUI
 """
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox  
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import plotly.express as px
+from PIL import Image, ImageTk
+import io
 import tensorflow as tf
 
 
@@ -211,248 +215,258 @@ class DataLoader:
 
 
 class PlotManager:
-    """Gestor de gráficas para la GUI"""
+    """Gestor de gráficas para la GUI usando Plotly - PROPER DIMENSIONS"""
     
     def __init__(self):
         self.figures = []
-        self.canvases = []
 
-    def create_time_series_plot(self, parent):
-        """Crear gráfica de series temporales"""
-        fig = Figure(figsize=(6, 4.6), dpi=100)
-        ax = fig.add_subplot(111)
-        ax.set_title("Time Series")
-        ax.set_xlabel("Time")
-        ax.set_ylabel("Value")
-        ax.grid(True, linestyle="--", linewidth=0.5)
-        
-        canvas = FigureCanvasTkAgg(fig, master=parent)
-        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        self.figures.append(fig)
-        self.canvases.append(canvas)
-        
-        return fig, ax, canvas
+    def create_time_series_plot(self):
+        """Crear gráfica de series temporales con Plotly - SMALLER DIMENSIONS"""
+        fig = go.Figure()
+        fig.update_layout(
+            title=dict(text="Time Series", x=0.5, xanchor='center', font=dict(size=14, family="Arial")),
+            xaxis_title="Time",
+            yaxis_title="Value",
+            template="plotly_white",
+            font=dict(family="Arial", size=10),
+            margin=dict(l=50, r=30, t=50, b=40),  # Reduced margins
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            height=300  # Fixed height
+        )
+        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGray', showline=True, linewidth=1, linecolor='black')
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGray', showline=True, linewidth=1, linecolor='black')
+        return fig
 
-    def create_correlation_plot(self, parent):
-        """Crear gráfica de matriz de correlación"""
-        fig = Figure(figsize=(6, 4.6), dpi=100)
-        ax = fig.add_subplot(111)
-        ax.set_title("Correlation Matrix")
-        
-        canvas = FigureCanvasTkAgg(fig, master=parent)
-        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        self.figures.append(fig)
-        self.canvases.append(canvas)
-        
-        return fig, ax, canvas
+    def create_correlation_plot(self):
+        """Crear gráfica de matriz de correlación con Plotly - SMALLER DIMENSIONS"""
+        fig = go.Figure()
+        fig.update_layout(
+            title=dict(text="Correlation Matrix", x=0.5, xanchor='center', font=dict(size=14, family="Arial")),
+            template="plotly_white",
+            font=dict(family="Arial", size=10),
+            margin=dict(l=50, r=30, t=50, b=40),  # Reduced margins
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            height=300  # Fixed height
+        )
+        return fig
 
-    def plot_time_series(self, df, time_col, value_col, ax, canvas):
-        """Graficar series temporales"""
-        ax.clear()
-        ax.plot(df[time_col], df[value_col], label=value_col)
-        ax.set_title(f"{value_col} vs {time_col}")
-        ax.set_xlabel(time_col)
-        ax.set_ylabel(value_col)
-        ax.grid(True, linestyle="--", linewidth=0.5)
-        ax.legend()
-        fig = ax.get_figure()
-        fig.tight_layout()
-        canvas.draw()
+    def plot_time_series(self, df, time_col, value_col):
+        """Graficar series temporales con Plotly - FIXED: Now takes 3 arguments"""
+        fig = self.create_time_series_plot()
+        fig.add_trace(go.Scatter(
+            x=df[time_col],
+            y=df[value_col],
+            mode='lines',
+            name=value_col,
+            line=dict(width=2, color='#1f77b4')
+        ))
+        fig.update_layout(
+            title=dict(text=f"{value_col} vs {time_col}", x=0.5, xanchor='center', font=dict(size=14)),
+            xaxis_title=time_col,
+            yaxis_title=value_col
+        )
+        return fig
 
-    def plot_correlation_matrix(self, df, ax, canvas):
-        """Graficar matriz de correlación"""
-        ax.clear()
-        
+    def plot_correlation_matrix(self, df):
+        """Graficar matriz de correlación con Plotly - FIXED: Now takes 1 argument"""
         if len(df.columns) < 2:
-            ax.set_title("Need at least 2 variables for correlation")
-            canvas.draw()
-            return
+            fig = self.create_correlation_plot()
+            fig.update_layout(title=dict(text="Need at least 2 variables for correlation", x=0.5))
+            return fig
         
         corr = df.corr(numeric_only=True)
-        im = ax.imshow(corr.values, interpolation="nearest", cmap='coolwarm', vmin=-1, vmax=1)
         
-        ax.set_xticks(range(len(corr.columns)))
-        ax.set_yticks(range(len(corr.columns)))
-        ax.set_xticklabels(corr.columns, rotation=45, ha="right")
-        ax.set_yticklabels(corr.columns)
-        ax.set_title("Correlation Matrix")
+        fig = self.create_correlation_plot()
+        fig.add_trace(go.Heatmap(
+            z=corr.values,
+            x=corr.columns.tolist(),
+            y=corr.columns.tolist(),
+            colorscale='RdBu',
+            zmin=-1,
+            zmax=1,
+            hoverongaps=False,
+            text=[[f'{val:.2f}' for val in row] for row in corr.values],
+            texttemplate="%{text}",
+            textfont={"size": 8, "color": "black"}  # Smaller font
+        ))
         
-        # Añadir valores numéricos
-        for i in range(len(corr.columns)):
-            for j in range(len(corr.columns)):
-                ax.text(j, i, f"{corr.values[i, j]:.2f}",
-                        ha="center", va="center", fontsize=9)
-        
-        fig = ax.get_figure()
-        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-        fig.tight_layout()
-        canvas.draw()
+        fig.update_layout(
+            title=dict(text="Correlation Matrix", x=0.5, xanchor='center'),
+            xaxis_title="Variables",
+            yaxis_title="Variables"
+        )
+        return fig
 
 
 class TrainingVisualizer:
-    """Visualizador del entrenamiento en tiempo real"""
+    """Visualizador del entrenamiento en tiempo real usando Plotly - PROPER DIMENSIONS"""
     
     def __init__(self):
         self.fig = None
-        self.ax_loss = None
-        self.ax_solution = None
-        self.canvas = None
-        self.loss_line = None
-        self.pred_line = None
-        self.true_line = None
-        self._current_colorbar = None
-        self._original_solution_pos = None  # Store original position
+        self.loss_history = []
+        self.current_problem = None
 
-    def setup_plots(self, parent):
-        """Configurar las gráficas de entrenamiento"""
-        self.fig = Figure(figsize=(10, 6), dpi=100)
+    def setup_plots(self):
+        """Configurar las gráficas de entrenamiento con Plotly - SMALLER DIMENSIONS"""
+        # Create subplot figure with proper sizing
+        self.fig = make_subplots(
+            rows=2, cols=1,
+            subplot_titles=('Loss Function vs Epochs', 'Predicted vs Analytical Solution'),
+            vertical_spacing=0.12,  # Adjusted spacing
+            row_heights=[0.4, 0.6]
+        )
         
-        # Crear subplots: pérdida arriba, solución abajo
-        self.ax_loss = self.fig.add_subplot(2, 1, 1)
-        self.ax_solution = self.fig.add_subplot(2, 1, 2)
+        # Configure layout with proper dimensions for GUI
+        self.fig.update_layout(
+            height=450,  # Reduced from 700 to fit GUI
+            showlegend=True,
+            template="plotly_white",
+            font=dict(family="Arial", size=10),  # Smaller font
+            margin=dict(l=50, r=30, t=60, b=40),  # Reduced margins
+            plot_bgcolor='white',
+            paper_bgcolor='white'
+        )
         
-        # Store original position for consistent layout
-        self._original_solution_pos = self.ax_solution.get_position()
+        # Scientific styling for axes
+        self.fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGray', 
+                             showline=True, linewidth=1, linecolor='black')
+        self.fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGray', 
+                             showline=True, linewidth=1, linecolor='black')
         
-        self.fig.tight_layout(pad=3.0)
+        # Loss plot configuration
+        self.fig.update_xaxes(title_text="Epoch", row=1, col=1)
+        self.fig.update_yaxes(title_text="Loss (log scale)", type="log", row=1, col=1)
         
-        self.canvas = FigureCanvasTkAgg(self.fig, master=parent)
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        self.init_plots()
+        # Solution plot configuration
+        self.fig.update_xaxes(title_text="Domain", row=2, col=1)
+        self.fig.update_yaxes(title_text="Solution", row=2, col=1)
 
     def init_plots(self):
         """Inicializar las gráficas - ONLY called when starting new training"""
-        # Gráfica de pérdida
-        self.ax_loss.clear()
-        self.ax_loss.set_title("Loss Function vs Epochs")
-        self.ax_loss.set_xlabel("Epoch")
-        self.ax_loss.set_ylabel("Loss (log scale)")
-        self.ax_loss.grid(True, which="both", linestyle='--', linewidth=0.5)
-        self.loss_line, = self.ax_loss.plot([], [], 'b-', linewidth=1.5)
-        self.ax_loss.set_yscale('log')
-
-        # Gráfica de solución (inicialmente vacía)
-        self.ax_solution.clear()
-        self.ax_solution.set_title("Predicted vs Analytical Solution")
-        self.ax_solution.grid(True, linestyle='--', linewidth=0.5)
+        # Clear all data
+        self.fig.data = []
+        self.loss_history = []
         
-        # Inicializar líneas (serán actualizadas según el tipo de problema)
-        self.pred_line, = self.ax_solution.plot([], [], 'b-', label="PINN Prediction", linewidth=2)
-        self.true_line, = self.ax_solution.plot([], [], 'r--', label="Analytical Solution", linewidth=2)
-        self.ax_solution.legend()
-
-        self.canvas.draw()
+        # Add empty traces for loss plot
+        self.fig.add_trace(go.Scatter(
+            x=[],
+            y=[],
+            mode='lines',
+            name='Training Loss',
+            line=dict(color='#1f77b4', width=2)
+        ), row=1, col=1)
 
     def update_loss_plot(self, epoch, loss_history):
         """Actualizar gráfica de pérdida"""
-        epochs_data = range(len(loss_history))
-        self.loss_line.set_data(epochs_data, loss_history)
-        self.ax_loss.relim()
-        self.ax_loss.autoscale_view()
-        self.canvas.draw_idle()
+        self.loss_history = loss_history
+        epochs = list(range(len(loss_history)))
+        
+        # Update loss trace
+        self.fig.data[0].x = epochs
+        self.fig.data[0].y = loss_history
 
     def update_solution_plot(self, x, y_true, y_pred, xlabel, ylabel):
-        """Actualizar gráfica de solución para problemas 1D"""
-        # Limpiar y configurar para 1D
-        self.ax_solution.clear()
-        self.ax_solution.grid(True, linestyle='--', linewidth=0.5)
+        """Actualizar gráfica de solución para problemas 1D - PROPER DIMENSIONS"""
+        # Clear previous solution data (keep loss data)
+        current_data = list(self.fig.data)
+        if len(current_data) > 1:
+            self.fig.data = current_data[:1]  # Keep only loss trace
         
-        # Plotear líneas
-        self.ax_solution.plot(x, y_true, 'r--', label="Analytical Solution", linewidth=2)
-        self.ax_solution.plot(x, y_pred, 'b-', label="PINN Prediction", linewidth=2)
+        # Add new solution traces with proper sizing
+        self.fig.add_trace(go.Scatter(
+            x=x.flatten(),
+            y=y_true.flatten(),
+            mode='lines',
+            name='Analytical Solution',
+            line=dict(color='#d62728', width=2, dash='dash'),  # Slightly thinner lines
+            showlegend=True
+        ), row=2, col=1)
         
-        self.ax_solution.set_xlabel(xlabel)
-        self.ax_solution.set_ylabel(ylabel)
-        self.ax_solution.set_title("Predicted vs Analytical Solution")
-        self.ax_solution.legend()
+        self.fig.add_trace(go.Scatter(
+            x=x.flatten(),
+            y=y_pred.flatten(),
+            mode='lines',
+            name='PINN Prediction',
+            line=dict(color='#2ca02c', width=2),  # Slightly thinner lines
+            showlegend=True
+        ), row=2, col=1)
         
-        self.ax_solution.relim()
-        self.ax_solution.autoscale_view()
-        self.canvas.draw_idle()
+        # Update axes labels
+        self.fig.update_xaxes(title_text=xlabel, row=2, col=1)
+        self.fig.update_yaxes(title_text=ylabel, row=2, col=1)
+        
+        # Update subplot title
+        self.fig.update_layout(
+            title_text="Training Progress",
+            title_x=0.5,
+            title_font=dict(size=14, family="Arial")  # Smaller title
+        )
 
     def update_heat_solution_plot(self, X, T, u_pred, title):
-        """Actualizar gráfica de solución para calor 2D - FIXED LAYOUT"""
+        """Actualizar gráfica de solución para calor 2D - PROPER DIMENSIONS - FIXED COLORBAR"""
         try:
-            # Clear previous plots safely
-            self._safe_clear_solution_plot()
+            # Clear previous solution data (keep loss data)
+            current_data = list(self.fig.data)
+            if len(current_data) > 1:
+                self.fig.data = current_data[:1]  # Keep only loss trace
             
-            # Reset axes position to maintain consistent layout
-            self.ax_solution.set_position(self._original_solution_pos)
+            # Create heatmap with proper sizing - FIXED COLORBAR CONFIGURATION
+            self.fig.add_trace(go.Heatmap(
+                x=X[0, :],  # x coordinates (first row)
+                y=T[:, 0],  # t coordinates (first column)
+                z=u_pred,
+                colorscale='Viridis',
+                colorbar=dict(
+                    title=dict(
+                        text='Temperature (u)',
+                        side='right'  # FIXED: Changed from 'titleside' to 'side'
+                    ),
+                    title_font=dict(size=10)  # FIXED: Updated property name
+                ),
+                name='PINN Solution',
+                showscale=True,
+                showlegend=False
+            ), row=2, col=1)
             
-            # Create new contour plot with proper boundaries
-            contour = self.ax_solution.contourf(X, T, u_pred, levels=20, cmap='hot')  # Reduced levels
-            
-            # Create colorbar with proper positioning to avoid layout shifts
-            if self._current_colorbar is None:
-                # First time: create colorbar with proper spacing
-                self._current_colorbar = self.fig.colorbar(
-                    contour, ax=self.ax_solution, 
-                    label='Temperature (u)',
-                    pad=0.05,  # Reduced padding
-                    shrink=0.8  # Shrink colorbar to leave space
-                )
-            else:
-                # Update existing colorbar
-                self._current_colorbar.mappable.set_array(u_pred)
-                self._current_colorbar.update_normal(contour)
-            
-            # Configure plot with proper boundaries
-            self.ax_solution.set_title(title)
-            self.ax_solution.set_xlabel('x')
-            self.ax_solution.set_ylabel('t')
-            self.ax_solution.grid(True, linestyle='--', linewidth=0.5, alpha=0.5)
-            
-            # Set explicit boundaries to match domain
-            self.ax_solution.set_xlim(X.min(), X.max())
-            self.ax_solution.set_ylim(T.min(), T.max())
-            
-            # Adjust layout to prevent shrinking
-            self.fig.tight_layout(rect=[0, 0, 0.95, 1])  # Leave 5% space on right for colorbar
-            
-            self.canvas.draw_idle()
+            # Update layout with proper sizing
+            self.fig.update_xaxes(title_text='x', row=2, col=1)
+            self.fig.update_yaxes(title_text='t', row=2, col=1)
+            self.fig.update_layout(
+                title_text=title,
+                title_x=0.5,
+                title_font=dict(size=12, family="Arial")  # Smaller title
+            )
             
         except Exception as e:
             print(f"Error updating heat solution plot: {e}")
 
-    def _safe_clear_solution_plot(self):
-        """Safely clear the solution plot without colorbar errors"""
-        # Clear the main axis
-        self.ax_solution.clear()
-        
-        # Safely remove colorbar if it exists
-        if hasattr(self, '_current_colorbar') and self._current_colorbar is not None:
-            try:
-                # Try to remove the colorbar
-                self._current_colorbar.remove()
-            except (AttributeError, ValueError) as e:
-                # If removal fails, just detach the reference
-                pass
-            finally:
-                # Always clear the reference
-                self._current_colorbar = None
-
     def reset_plots(self):
-        """Reset plots completely - only called when starting new training"""
-        self._safe_clear_solution_plot()
-        
-        # Reset to default state
-        self.ax_solution.set_title("Predicted vs Analytical Solution")
-        self.ax_solution.grid(True, linestyle='--', linewidth=0.5)
-        self.ax_solution.legend()
-        self.canvas.draw_idle()
+        """Reset plots completely"""
+        self.fig.data = []
+        self.loss_history = []
+        self.init_plots()
 
     def clear_plots(self):
-        """Clear all plots completely - call this when stopping training"""
-        self._safe_clear_solution_plot()
-        
-        # Reset to default state
-        self.ax_solution.set_title("Predicted vs Analytical Solution")
-        self.ax_solution.grid(True, linestyle='--', linewidth=0.5)
-        self.ax_solution.legend()
-        self.canvas.draw_idle()
+        """Clear all plots completely"""
+        self.fig.data = []
+        self.loss_history = []
+
+    def get_plot_image(self):
+        """Convert Plotly figure to PIL Image for display in Tkinter - PROPER DIMENSIONS"""
+        try:
+            # Convert Plotly figure to image with PROPER DIMENSIONS
+            img_bytes = self.fig.to_image(format="png", width=600, height=450, scale=1.5)  # Reduced dimensions
+            
+            # Convert bytes to PIL Image
+            pil_image = Image.open(io.BytesIO(img_bytes))
+            return pil_image
+            
+        except Exception as e:
+            print(f"Error converting plot to image: {e}")
+            # Return a blank image as fallback
+            return Image.new('RGB', (600, 450), color='white')
 
 
 class MetricsCalculator:

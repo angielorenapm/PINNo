@@ -1,5 +1,4 @@
 # src/physics.py
-
 """
 Módulo que define los problemas físicos y sus ecuaciones diferenciales.
 (Versión 0.0.3 - Con ecuación de calor 2D)
