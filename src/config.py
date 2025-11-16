@@ -1,5 +1,4 @@
 # src/config.py
-
 """
 Módulo de Configuración Central para el Solucionador de PINNs.
 (Versión 0.0.3 - Con ecuación de calor 2D)
@@ -100,7 +99,7 @@ HEAT_CONFIG = {
     "DATA_CONFIG": {
         "n_initial": 50,         # Puntos en t=0 (condición inicial)
         "n_boundary": 50,        # Puntos en los bordes espaciales
-        "n_collocation": 2000    # Puntos internos para la PDE
+        "n_collocation": 1000    # Puntos internos para la PDE
     },
     "LOSS_WEIGHTS": {
         "pde": 1.0,               # Peso para la pérdida de la PDE

@@ -1,3 +1,4 @@
+#gui.py
 """
 Interfaz gráfica principal para PINN Interactive Trainer
 
