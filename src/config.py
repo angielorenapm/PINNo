@@ -1,7 +1,6 @@
-# src/config.py
 """
 Módulo de Configuración Central para el Solucionador de PINNs.
-(Versión 0.0.3 - Con ecuación de calor 2D)
+(Versión 0.0.4 - Con selección de columnas por usuario)
 """
 import numpy as np
 
@@ -9,6 +8,13 @@ import numpy as np
 RESULTS_PATH = "results"
 EPOCHS = 15000
 LEARNING_RATE = 1e-3
+
+# --- Variables requeridas para cada problema ---
+PROBLEM_VARIABLES = {
+    "SHO": ["time", "displacement"],
+    "DHO": ["time", "displacement"], 
+    "HEAT": ["x", "y", "time", "temperature"]
+}
 
 # ==============================================================================
 # --- DEFINICIÓN DE CONFIGURACIONES PARA CADA PROBLEMA ---
@@ -40,7 +46,8 @@ SHO_CONFIG = {
     },
     "LOSS_WEIGHTS": {
         "ode": 1.0, 
-        "initial": 100.0
+        "initial": 100.0,
+        "data": 10.0
     }
 }
 
@@ -71,7 +78,8 @@ DHO_CONFIG = {
     },
     "LOSS_WEIGHTS": {
         "ode": 1.0, 
-        "initial": 100.0
+        "initial": 100.0,
+        "data": 10.0
     }
 }
 
@@ -104,7 +112,8 @@ HEAT_CONFIG = {
     "LOSS_WEIGHTS": {
         "pde": 1.0,               # Peso para la pérdida de la PDE
         "initial": 100.0,         # Peso para la condición inicial
-        "boundary": 100.0         # Peso para las condiciones de contorno
+        "boundary": 100.0,        # Peso para las condiciones de contorno
+        "data": 10.0              # Peso para datos CSV
     }
 }
 
@@ -115,21 +124,12 @@ HEAT_CONFIG = {
 ALL_CONFIGS = {
     "SHO": SHO_CONFIG,
     "DHO": DHO_CONFIG,
-    "HEAT": HEAT_CONFIG  # Cambiado de "WAVE" a "HEAT"
+    "HEAT": HEAT_CONFIG
 }
 
 def get_active_config(problem_name: str) -> dict:
     """
     Obtiene la configuración activa para un problema dado.
-    
-    Args:
-        problem_name: Nombre del problema ("SHO", "DHO", "HEAT")
-        
-    Returns:
-        Dict: Configuración completa del problema
-        
-    Raises:
-        ValueError: Si el nombre del problema no es válido
     """
     problem_name = problem_name.upper()
     if problem_name not in ALL_CONFIGS:
@@ -137,3 +137,10 @@ def get_active_config(problem_name: str) -> dict:
         raise ValueError(f"'{problem_name}' no es un problema válido. " 
                         f"Elige entre: {valid_problems}")
     return ALL_CONFIGS[problem_name]
+
+def get_problem_variables(problem_name: str) -> list:
+    """
+    Obtiene las variables requeridas para un problema específico.
+    """
+    problem_name = problem_name.upper()
+    return PROBLEM_VARIABLES.get(problem_name, [])
