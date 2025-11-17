@@ -1,6 +1,7 @@
+#src/config.py
 """
 Módulo de Configuración Central para el Solucionador de PINNs.
-(Versión 0.0.4 - Con selección de columnas por usuario)
+(Versión 0.0.4 - Con soporte para mapeo de columnas CSV)
 """
 import numpy as np
 
@@ -107,7 +108,7 @@ HEAT_CONFIG = {
     "DATA_CONFIG": {
         "n_initial": 50,         # Puntos en t=0 (condición inicial)
         "n_boundary": 50,        # Puntos en los bordes espaciales
-        "n_collocation": 1000    # Puntos internos para la PDE
+        "n_collocation": 500    # Puntos internos para la PDE
     },
     "LOSS_WEIGHTS": {
         "pde": 1.0,               # Peso para la pérdida de la PDE

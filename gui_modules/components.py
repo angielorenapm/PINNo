@@ -1,3 +1,4 @@
+#gui_modules/components.py
 """
 Componentes reutilizables para la GUI - DataLoader, PlotManager, etc.
 USING PLOTLY WITH PROPER DIMENSIONS FOR GUI
@@ -412,9 +413,14 @@ class TrainingVisualizer:
         if len(current_data) > 1:
             self.fig.data = current_data[:1]
         
+        # FIXED: Use reshape instead of flatten for numpy arrays
+        x_flat = x.reshape(-1) if hasattr(x, 'reshape') else x
+        y_true_flat = y_true.reshape(-1) if hasattr(y_true, 'reshape') else y_true
+        y_pred_flat = y_pred.reshape(-1) if hasattr(y_pred, 'reshape') else y_pred
+        
         self.fig.add_trace(go.Scatter(
-            x=x.flatten(),
-            y=y_true.flatten(),
+            x=x_flat,
+            y=y_true_flat,
             mode='lines',
             name='True Solution',
             line=dict(color='#d62728', width=2, dash='dash'),
@@ -422,8 +428,8 @@ class TrainingVisualizer:
         ), row=2, col=1)
         
         self.fig.add_trace(go.Scatter(
-            x=x.flatten(),
-            y=y_pred.flatten(),
+            x=x_flat,
+            y=y_pred_flat,
             mode='lines',
             name='PINN Prediction',
             line=dict(color='#2ca02c', width=2),
@@ -446,16 +452,14 @@ class TrainingVisualizer:
             if len(current_data) > 1:
                 self.fig.data = current_data[:1]
             
-            # FIXED: Use 'side' instead of 'titleside'
             self.fig.add_trace(go.Heatmap(
                 x=X[0, :],
                 y=T[:, 0],
                 z=u_pred,
                 colorscale='Viridis',
                 colorbar=dict(
-                    title='Temperature (u)',
-                    side='right',  # CORRECTED: titleside -> side
-                    titlefont=dict(size=10)
+                    title='(u)',
+                    tickfont=dict(size=5)
                 ),
                 name='PINN Solution',
                 showscale=True,

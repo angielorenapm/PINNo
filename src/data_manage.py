@@ -1,6 +1,7 @@
+#src/data_manage.py
 """
 Módulo para gestión y muestreo de datos en PINNs.
-(Versión 0.0.4 - Con soporte para mapeo de columnas CSV)
+(Versión 0.0.4.1 - Con soporte para mapeo de columnas CSV y mejor manejo de tensores)
 """
 import numpy as np
 import tensorflow as tf
@@ -70,7 +71,7 @@ class DataManager:
                              dtype=tf.float32)
         
         return {
-            "t_coll": t_coll,
+            "t_coll": tf.constant(t_coll, dtype=tf.float32),  # FIXED: Ensure tensor
             "t0": t0,
             "x0_true": x0_true,
             "v0_true": v0_true
@@ -96,7 +97,7 @@ class DataManager:
         xyt_b = self._sample_boundary_condition_heat(x_domain, y_domain, t_domain, n_bound)
         
         return {
-            "xyt_coll": xyt_coll,
+            "xyt_coll": tf.constant(xyt_coll, dtype=tf.float32),  # FIXED: Ensure tensor
             "xyt0": xyt0,
             "xyt_b": xyt_b
         }

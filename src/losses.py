@@ -1,6 +1,7 @@
+#src/losses.py
 """
 Módulo para cálculo de funciones de pérdida en PINNs.
-(Versión 0.0.4 - Con soporte para datos CSV)
+(Versión 0.0.4 - Con mejoras para datos CSV)
 """
 import tensorflow as tf
 import numpy as np
@@ -89,17 +90,17 @@ class LossCalculator:
         t_data = training_data["t_data"]
         x_data = training_data["x_data"]
         
-        # Pérdida de PDE
+        # Pérdida de PDE (reduced weight for CSV mode)
         residual = physics.pde_residual(model, t_coll)
         loss_pde = tf.reduce_mean(tf.square(residual))
         
-        # Pérdida de datos
+        # Pérdida de datos (main focus for CSV mode)
         x_pred = model(t_data)
         loss_data = tf.reduce_mean(tf.square(x_pred - x_data))
         
-        # Pérdida total ponderada
-        total_loss = (self.loss_weights["ode"] * loss_pde +
-                     self.loss_weights.get("data", 10.0) * loss_data)
+        # FIXED: Better loss weighting for CSV mode
+        total_loss = (self.loss_weights.get("ode", 0.1) * loss_pde +
+                     self.loss_weights.get("data", 200.0) * loss_data)
         
         return total_loss, [loss_pde, loss_data]
 
@@ -112,18 +113,18 @@ class LossCalculator:
         t_data = training_data["t_data"]
         u_data = training_data["u_data"]
         
-        # Pérdida de PDE
+        # Pérdida de PDE (reduced weight for CSV mode)
         residual = physics.pde_residual(model, xyt_coll)
         loss_pde = tf.reduce_mean(tf.square(residual))
         
-        # Pérdida de datos
+        # Pérdida de datos (main focus for CSV mode)
         xyt_data = tf.concat([x_data, y_data, t_data], axis=1)
         u_pred = model(xyt_data)
         loss_data = tf.reduce_mean(tf.square(u_pred - u_data))
         
-        # Pérdida total ponderada
-        total_loss = (self.loss_weights["pde"] * loss_pde +
-                     self.loss_weights.get("data", 10.0) * loss_data)
+        # FIXED: Better loss weighting for CSV mode
+        total_loss = (self.loss_weights.get("pde", 0.1) * loss_pde +
+                     self.loss_weights.get("data", 200.0) * loss_data)
         
         return total_loss, [loss_pde, loss_data]
 
@@ -139,12 +140,16 @@ class LossCalculator:
 
     # Funciones de pérdida específicas para SHO/DHO analíticos
     def _initial_loss_sho(self, model: tf.keras.Model, t0: tf.Tensor, 
-                         x0_true: float, v0_true: float) -> tf.Tensor:
+                         x0_true: tf.Tensor, v0_true: tf.Tensor) -> tf.Tensor:
         """Pérdida para condiciones iniciales de SHO"""
         with tf.GradientTape() as tape:
             tape.watch(t0)
             x0_pred = model(t0)
         v0_pred = tape.gradient(x0_pred, t0)
+        
+        # FIXED: Ensure we have valid gradients
+        if v0_pred is None:
+            v0_pred = tf.zeros_like(t0)
         
         loss_x0 = tf.reduce_mean(tf.square(x0_pred - x0_true))
         loss_v0 = tf.reduce_mean(tf.square(v0_pred - v0_true))

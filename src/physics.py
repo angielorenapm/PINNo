@@ -1,6 +1,7 @@
+#src/physics.py
 """
 Módulo que define los problemas físicos y sus ecuaciones diferenciales.
-(Versión 0.0.4 - Con soporte para mapeo de columnas CSV)
+(Versión 0.0.4 - Con soporte para mapeo de columnas CSV y mejoras DHO)
 """
 import numpy as np
 import tensorflow as tf
@@ -22,7 +23,7 @@ class PhysicsProblem(ABC):
         pass
     
     @abstractmethod
-    def analytical_solution(self, points) -> np.ndarray:
+    def analytical_solution(self, points) -> tf.Tensor:  # Changed return type to tf.Tensor
         pass
     
     def set_csv_data(self, csv_data: pd.DataFrame, column_mapping: Dict[str, str]):
@@ -38,8 +39,19 @@ class PhysicsProblem(ABC):
         return self._extract_data_with_mapping()
 
     def _extract_data_with_mapping(self) -> Optional[Tuple]:
-        """Extract data using column mapping - to be implemented by subclasses"""
-        return None
+        """Extract data using column mapping for SHO"""
+        time_col = self.column_mapping.get('time')
+        disp_col = self.column_mapping.get('displacement')
+        
+        if not time_col or not disp_col:
+            raise ValueError("Column mapping missing for SHO. Required: 'time', 'displacement'")
+        
+        t_data = self.csv_data[time_col].values.reshape(-1, 1)
+        x_data = self.csv_data[disp_col].values.reshape(-1, 1)
+        
+        # Ensure we're working with proper float32 arrays
+        return t_data.astype(np.float32), x_data.astype(np.float32)
+    
 
 # --- Implementaciones de Problemas Físicos ---
 
@@ -61,12 +73,19 @@ class SimpleHarmonicOscillator(PhysicsProblem):
                              
         return x_tt + (self.omega**2) * x
     
-    def analytical_solution(self, t) -> np.ndarray:
-        t_val = t.numpy() if hasattr(t, 'numpy') else t
+    def analytical_solution(self, t) -> tf.Tensor:  # Fixed: return Tensor instead of numpy array
+        """Return analytical solution as TensorFlow tensor"""
+        if hasattr(t, 'numpy'):
+            t_val = t.numpy()
+        else:
+            t_val = t
+            
         x0 = self.domain_config['initial_conditions']['x0']
         v0 = self.domain_config['initial_conditions']['v0']
         omega_val = self.omega.numpy()
-        return x0 * np.cos(omega_val * t_val) + (v0 / omega_val) * np.sin(omega_val * t_val)
+        
+        result = x0 * np.cos(omega_val * t_val) + (v0 / omega_val) * np.sin(omega_val * t_val)
+        return tf.constant(result, dtype=tf.float32)
     
     def _extract_data_with_mapping(self) -> Optional[Tuple]:
         """Extract data using column mapping for SHO"""
@@ -85,8 +104,14 @@ class DampedHarmonicOscillator(SimpleHarmonicOscillator):
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.zeta = tf.constant(self.domain_config['zeta'], dtype=tf.float32)
+        
+        # Add debugging information
+        print(f"DHO initialized with omega={self.omega.numpy():.3f}, zeta={self.zeta.numpy():.3f}")
 
     def pde_residual(self, model: tf.keras.Model, t: tf.Tensor) -> tf.Tensor:
+        """
+        Damped Harmonic Oscillator: x'' + 2ζωx' + ω²x = 0
+        """
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(t)
             x = model(t)
@@ -99,19 +124,48 @@ class DampedHarmonicOscillator(SimpleHarmonicOscillator):
 
         return x_tt + 2 * self.zeta * self.omega * x_t + (self.omega**2) * x
 
-    def analytical_solution(self, t) -> np.ndarray:
-        t_val = t.numpy() if hasattr(t, 'numpy') else t
+    def analytical_solution(self, t) -> tf.Tensor:  # Fixed: return Tensor instead of numpy array
+        """
+        Analytical solution for damped harmonic oscillator as TensorFlow tensor
+        """
+        if hasattr(t, 'numpy'):
+            t_val = t.numpy()
+        else:
+            t_val = t
+            
         x0 = self.domain_config['initial_conditions']['x0']
         v0 = self.domain_config['initial_conditions']['v0']
         omega_val = self.omega.numpy()
         zeta_val = self.zeta.numpy()
-        if zeta_val < 1:
+        
+        if zeta_val < 1:  # Underdamped
             omega_d = omega_val * np.sqrt(1 - zeta_val**2)
             A = x0
             B = (v0 + zeta_val * omega_val * x0) / omega_d
-            return np.exp(-zeta_val * omega_val * t_val) * (A * np.cos(omega_d * t_val) + B * np.sin(omega_d * t_val))
-        else:
-            return np.zeros_like(t_val)
+            result = np.exp(-zeta_val * omega_val * t_val) * (A * np.cos(omega_d * t_val) + B * np.sin(omega_d * t_val))
+        elif zeta_val == 1:  # Critically damped
+            result = np.exp(-omega_val * t_val) * (x0 + (v0 + omega_val * x0) * t_val)
+        else:  # Overdamped
+            r1 = -omega_val * (zeta_val - np.sqrt(zeta_val**2 - 1))
+            r2 = -omega_val * (zeta_val + np.sqrt(zeta_val**2 - 1))
+            c1 = (v0 - r2 * x0) / (r1 - r2)
+            c2 = (v0 - r1 * x0) / (r2 - r1)
+            result = c1 * np.exp(r1 * t_val) + c2 * np.exp(r2 * t_val)
+        
+        return tf.constant(result, dtype=tf.float32)
+    
+    def _extract_data_with_mapping(self) -> Optional[Tuple]:
+        """Extract data using column mapping for DHO"""
+        time_col = self.column_mapping.get('time')
+        disp_col = self.column_mapping.get('displacement')
+        
+        if not time_col or not disp_col:
+            raise ValueError("Column mapping missing for DHO. Required: 'time', 'displacement'")
+        
+        t_data = self.csv_data[time_col].values.reshape(-1, 1)
+        x_data = self.csv_data[disp_col].values.reshape(-1, 1)
+        
+        return t_data, x_data
 
 class HeatEquation2D(PhysicsProblem):
     def __init__(self, config: Dict[str, Any]):
@@ -138,17 +192,22 @@ class HeatEquation2D(PhysicsProblem):
 
         return u_t - self.alpha * (u_xx + u_yy)
 
-    def analytical_solution(self, xyt) -> np.ndarray:
+    def analytical_solution(self, xyt) -> tf.Tensor:  # Fixed: return Tensor instead of numpy array
         """
         Solución analítica para la ecuación de calor 2D con condiciones de contorno cero.
         """
-        xyt_val = xyt.numpy() if hasattr(xyt, 'numpy') else xyt
+        if hasattr(xyt, 'numpy'):
+            xyt_val = xyt.numpy()
+        else:
+            xyt_val = xyt
+            
         x = xyt_val[:, 0:1]
         y = xyt_val[:, 1:2] 
         t = xyt_val[:, 2:3]
         alpha_val = self.alpha.numpy()
         
-        return np.exp(-alpha_val * np.pi**2 * t) * np.sin(np.pi * x) * np.sin(np.pi * y)
+        result = np.exp(-alpha_val * np.pi**2 * t) * np.sin(np.pi * x) * np.sin(np.pi * y)
+        return tf.constant(result, dtype=tf.float32)
     
     def _extract_data_with_mapping(self) -> Optional[Tuple]:
         """Extract data using column mapping for Heat Equation"""
