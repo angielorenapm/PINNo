@@ -1,26 +1,32 @@
 # PINNo requirements - tested with Python 3.10+
 # Core machine learning and numerical computing
-tensorflow>=2.12.0
-numpy>=1.24.0
-matplotlib>=3.7.0
-
-# Development and testing
-pytest>=7.0
-black>=23.0
-ruff>=0.0.275
-
-mypy>=1.0.0  # Added for static type checking
-# Data handling and analysis
-pandas>=1.5.0
-scipy>=1.10.0  # Added for scientific computing and equation discovery
+tensorflow>=2.12.0,<2.16.0
+numpy>=1.24.0,<1.26.0
+matplotlib>=3.7.0,<3.9.0
 
 # GUI and visualization
-Pillow>=9.0.0  # Added for image handling in GUI
+tkinter  # Usually comes with Python
+Pillow>=9.0.0,<11.0.0
+plotly>=5.14.0,<6.0.0  # Added for interactive plots in GUI
+
+# Data handling and analysis
+pandas>=1.5.0,<2.2.0
+scipy>=1.10.0,<1.14.0
 
 # Configuration and serialization
-pyyaml>=6.0
-h5py>=3.8.0  # Added for model saving/loading
+pyyaml>=6.0,<7.0
+h5py>=3.8.0,<3.11.0
+
+# Development and testing
+pytest>=7.0,<8.0
+black>=23.0,<25.0
+ruff>=0.0.275,<0.4.0
+mypy>=1.0.0,<2.0.0
 
 # Optional: Symbolic mathematics for equation discovery
-sympy>=1.11.0  # Added for symbolic regression and equation discovery
+sympy>=1.11.0,<1.13.0
 
+# Additional utilities
+typing-extensions>=4.0.0,<5.0.0  # For better type hints
+absl-py>=1.0.0,<2.0.0  # TensorFlow dependency
+protobuf>=3.20.0,<4.0.0  # TensorFlow dependency

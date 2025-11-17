@@ -1,21 +1,19 @@
-# gui_modules/data_explorer.py
+#gui_modules/data_explorer.py
 """
-Módulo para la pestaña de exploración de datos - Versión corregida
-- Matriz de correlación se plotea solo al cargar CSV
-- Series temporales se actualizan al cambiar variable Y
+Módulo para la pestaña de exploración de datos - Versión corregida con Plotly y DIMENSIONES ADECUADAS
 """
 import tkinter as tk
 from tkinter import ttk, messagebox
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from PIL import Image, ImageTk
+import io
 
 from gui_modules.components import DataLoader, PlotManager
 
 
 class DataExplorer(ttk.Frame):
-    """Pestaña de exploración y visualización de datos CSV"""
+    """Pestaña de exploración y visualización de datos CSV usando Plotly con DIMENSIONES ADECUADAS"""
     
     def __init__(self, parent, shared_state):
         super().__init__(parent)
@@ -25,7 +23,7 @@ class DataExplorer(ttk.Frame):
         
         # Variables de UI
         self.y_choice = tk.StringVar(value="Select variable")
-        self._is_plotting = False  # Protección contra múltiples plots
+        self._is_plotting = False
         
         self._build_interface()
         self._setup_event_handlers()
@@ -74,7 +72,7 @@ class DataExplorer(ttk.Frame):
         self.attr_tree.pack(fill=tk.BOTH, expand=True)
 
     def _build_plots_panel(self, parent):
-        """Panel de visualización de gráficas"""
+        """Panel de visualización de gráficas con Plotly - DIMENSIONES ADECUADAS"""
         plots_frame = ttk.Frame(parent)
         plots_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
@@ -82,17 +80,19 @@ class DataExplorer(ttk.Frame):
         plots_row = ttk.Frame(plots_frame)
         plots_row.pack(fill=tk.BOTH, expand=True)
 
-        # Gráfica de series temporales
-        self.ts_frame = ttk.Frame(plots_row)
+        # Gráfica de series temporales - TAMAÑO ADECUADO
+        self.ts_frame = ttk.Labelframe(plots_row, text="Time Series", padding=5)
         self.ts_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
         
-        # Gráfica de correlación
-        self.corr_frame = ttk.Frame(plots_row)
-        self.corr_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(5, 0))
+        self.ts_label = ttk.Label(self.ts_frame)
+        self.ts_label.pack(fill=tk.BOTH, expand=True)
 
-        # Crear gráficas
-        self.ts_fig, self.ts_ax, self.ts_canvas = self.plot_manager.create_time_series_plot(self.ts_frame)
-        self.corr_fig, self.corr_ax, self.corr_canvas = self.plot_manager.create_correlation_plot(self.corr_frame)
+        # Gráfica de correlación - TAMAÑO ADECUADO
+        self.corr_frame = ttk.Labelframe(plots_row, text="Correlation Matrix", padding=5)
+        self.corr_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(5, 0))
+        
+        self.corr_label = ttk.Label(self.corr_frame)
+        self.corr_label.pack(fill=tk.BOTH, expand=True)
 
         # Información del dataset
         self._build_dataset_info(plots_frame)
@@ -101,20 +101,28 @@ class DataExplorer(ttk.Frame):
         """Panel de información del dataset"""
         info_frame = ttk.Labelframe(parent, text="Dataset Info", padding=10)
         info_frame.pack(fill=tk.X, pady=6)
-        self.info_label = ttk.Label(info_frame, text="No dataset loaded")
+        
+        info_text = f"Loaded: {self.data_loader.get_filename()}"
+        if hasattr(self.data_loader, 'has_headers'):
+            header_status = "With headers" if self.data_loader.has_headers else "No headers (auto-named)"
+            info_text += f" | {header_status}"
+        
+        self.info_label = ttk.Label(info_frame, text=info_text)
         self.info_label.pack(anchor="w")
 
     def _setup_event_handlers(self):
         """Configurar manejadores de eventos"""
-        # Actualizar automáticamente cuando cambia la variable Y
         self.y_selector.bind('<<ComboboxSelected>>', self._on_variable_change)
 
     def _handle_file_open(self):
-        """Manejar apertura de archivo CSV"""
+        """Manejar apertura de archivo CSV con diálogos de usuario"""
         try:
             df = self.data_loader.load_csv()
             if df is not None:
-                self._process_loaded_data(df)
+                # Prompt user for column selection/naming
+                df = self.data_loader.prompt_column_selection(self, df)
+                if df is not None:
+                    self._process_loaded_data(df)
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load file:\n\n{e}")
 
@@ -122,8 +130,13 @@ class DataExplorer(ttk.Frame):
         """Procesar datos cargados exitosamente"""
         self.shared_state['current_dataframe'] = df
         self._update_attributes_display(df)
-        self._update_variable_selector(df)
-        self.info_label.config(text=f"Loaded: {self.data_loader.get_filename()}")
+        self._update_variable_selectors(df)
+        
+        # Update info with header status and time column
+        header_status = "with headers" if self.data_loader.has_header_row() else "without headers (user named)"
+        time_col = self.data_loader.get_time_column()
+        info_text = f"Loaded: {self.data_loader.get_filename()} | {header_status} | Time: {time_col}"
+        self.info_label.config(text=info_text)
         
         # Plotear matriz de correlación SOLO cuando se carga el CSV
         self._plot_correlation_matrix()
@@ -134,12 +147,17 @@ class DataExplorer(ttk.Frame):
         for i, col in enumerate(df.columns, 1):
             self.attr_tree.insert("", "end", values=(i, str(col)))
 
-    def _update_variable_selector(self, df):
-        """Actualizar selector de variables"""
+    def _update_variable_selectors(self, df):
+        """Actualizar selectores de variables (time column is now fixed)"""
         numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-        self.y_selector['values'] = numeric_cols
-        if numeric_cols:
-            self.y_choice.set(numeric_cols[0])
+        
+        # Update Y variable selector (exclude time column)
+        time_col = self.data_loader.get_time_column()
+        y_options = [col for col in numeric_cols if col != time_col]
+        self.y_selector['values'] = y_options
+        
+        if y_options:
+            self.y_choice.set(y_options[0])
             # Actualizar gráfica de series temporales automáticamente
             self._plot_current_data()
 
@@ -153,17 +171,17 @@ class DataExplorer(ttk.Frame):
             # Solo generar matriz de correlación si hay suficientes columnas numéricas
             numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
             if len(numeric_cols) >= 2:
-                self.plot_manager.plot_correlation_matrix(df[numeric_cols], self.corr_ax, self.corr_canvas)
+                # FIXED: Now using correct number of arguments
+                fig = self.plot_manager.plot_correlation_matrix(df[numeric_cols])
+                self._display_plotly_figure(fig, self.corr_label)
             else:
                 # Limpiar gráfica de correlación si no hay suficientes datos
-                self.corr_ax.clear()
-                self.corr_ax.set_title("Need at least 2 numeric variables")
-                self.corr_canvas.draw()
+                self.corr_label.config(image='')
         except Exception as e:
             print(f"Error plotting correlation matrix: {e}")
 
     def _plot_current_data(self):
-        """Generar solo la gráfica de series temporales - llamada automática al cambiar Y"""
+        """Generar solo la gráfica de series temporales - FIXED ARGUMENT COUNT"""
         # Verificar que tenemos datos
         df = self.shared_state.get('current_dataframe')
         if df is None or df.empty:
@@ -181,18 +199,37 @@ class DataExplorer(ttk.Frame):
         try:
             self._is_plotting = True
             
-            # Generar SOLO la gráfica de series temporales
-            time_col = self.data_loader.detect_time_column(df)
-            self.plot_manager.plot_time_series(df, time_col, y_col, self.ts_ax, self.ts_canvas)
-                
+            # Usar la columna de tiempo seleccionada por el usuario
+            time_col = self.data_loader.get_time_column()
+            if time_col and time_col in df.columns:
+                # FIXED: Now using correct number of arguments
+                fig = self.plot_manager.plot_time_series(df, time_col, y_col)
+                self._display_plotly_figure(fig, self.ts_label)
+            else:
+                # Fallback: usar detección automática si no hay columna de tiempo seleccionada
+                time_col = self.data_loader.detect_time_column(df)
+                fig = self.plot_manager.plot_time_series(df, time_col, y_col)
+                self._display_plotly_figure(fig, self.ts_label)
+                    
         except Exception as e:
             print(f"Error plotting time series: {e}")
         finally:
             self._is_plotting = False
 
+    def _display_plotly_figure(self, fig, label):
+        """Display a Plotly figure in a Tkinter label - DIMENSIONES ADECUADAS"""
+        try:
+            # Convert Plotly figure to image with PROPER DIMENSIONS
+            img_bytes = fig.to_image(format="png", width=400, height=300, scale=1.5)  # Reduced dimensions
+            pil_image = Image.open(io.BytesIO(img_bytes))
+            photo = ImageTk.PhotoImage(pil_image)
+            label.configure(image=photo)
+            label.image = photo  # Keep a reference
+        except Exception as e:
+            print(f"Error displaying plot: {e}")
+
     def _on_variable_change(self, event=None):
         """Manejar cambio de variable seleccionada - actualización automática"""
-        # Pequeño delay para asegurar que el cambio se ha procesado
         self.after(100, self._plot_current_data)
 
     def on_shared_state_change(self, key, value):
