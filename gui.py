@@ -9,6 +9,10 @@ Punto de entrada único para la interfaz gráfica. Coordina las tres pestañas p
 
 Mantiene un estado global compartido entre todas las pestañas.
 """
+import os
+# Suppress TensorFlow warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # 0 = all, 1 = info, 2 = warnings, 3 = errors
+
 import tkinter as tk
 from tkinter import ttk
 import numpy as np

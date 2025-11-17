@@ -30,9 +30,13 @@ class PINN_MLP(tf.keras.Model):
         if num_layers < 2:
             raise ValueError("El número de capas debe ser al menos 2 (entrada y salida).")
 
-        layers = [tf.keras.layers.Dense(hidden_dim, activation=activation, input_shape=(input_dim,))]
+        # FIXED: Use Input layer first to avoid warnings
+        layers = [tf.keras.layers.InputLayer(shape=(input_dim,))]
+        layers.append(tf.keras.layers.Dense(hidden_dim, activation=activation))
+        
         for _ in range(num_layers - 2):
             layers.append(tf.keras.layers.Dense(hidden_dim, activation=activation))
+        
         layers.append(tf.keras.layers.Dense(output_dim))
         self.network = tf.keras.Sequential(layers)
 

@@ -13,7 +13,7 @@ import os
 
 def main():
     """Función principal que inicia el experimento."""
-    print("--- ✨ Iniciando Experimento PINN ✨ ---")
+    print("---  Iniciando Experimento PINN  ---")
     
     # Crea el directorio 'results' si no existe
     if not os.path.exists("results"):
@@ -22,7 +22,7 @@ def main():
     # Llama a la función principal del módulo de entrenamiento
     run_training()
     
-    print("\n--- ✅ Experimento completado exitosamente ---")
+    print("\n---  Experimento completado exitosamente ---")
 
 
 if __name__ == "__main__":
