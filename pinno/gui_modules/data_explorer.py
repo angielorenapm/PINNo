@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from gui_modules.components import DataLoader, PlotManager
+from .components import DataLoader, PlotManager
 
 
 class DataExplorer(ttk.Frame):

@@ -8,8 +8,8 @@ import numpy as np
 import tensorflow as tf
 import threading
 
-from src.training import PINNTrainer
-from src.config import get_active_config
+from ..training import PINNTrainer
+from ..config import get_active_config
 
 class TrainingTab(ttk.Frame):
     """

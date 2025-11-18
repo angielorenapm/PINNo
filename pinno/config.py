@@ -1,9 +1,17 @@
-# src/config.py
-
 """
 Módulo de Configuración Central para el Solucionador de PINNs.
-(Versión 0.0.3 - Con ecuación de calor 2D)
+(Con ecuación de calor 2D).
+
+Este módulo centraliza todos los hiperparámetros del modelo, condiciones físicas
+y configuraciones de entrenamiento. Actúa como la fuente de la verdad para
+el experimento.
+
+Attributes:
+    RESULTS_PATH (str): Ruta del directorio donde se guardarán los modelos y gráficos.
+    EPOCHS (int): Número predeterminado de iteraciones para el entrenamiento.
+    LEARNING_RATE (float): Tasa de aprendizaje para el optimizador Adam.
 """
+
 import numpy as np
 
 # --- Configuración General del Experimento (Compartida) ---
@@ -15,7 +23,6 @@ LEARNING_RATE = 1e-3
 # --- DEFINICIÓN DE CONFIGURACIONES PARA CADA PROBLEMA ---
 # ==============================================================================
 
-# --- 1. Oscilador Armónico Simple (SHO) ---
 SHO_CONFIG = {
     "RUN_NAME": "Simple_Harmonic_Oscillator",
     "LEARNING_RATE": LEARNING_RATE,
@@ -44,8 +51,14 @@ SHO_CONFIG = {
         "initial": 100.0
     }
 }
+"""
+dict: Configuración para el Oscilador Armónico Simple (SHO).
 
-# --- 2. Oscilador Armónico Amortiguado (DHO) ---
+Define un sistema masa-resorte sin fricción.
+- **PHYSICS_CONFIG**: Define `omega` (frecuencia angular) y dominio temporal.
+- **MODEL_CONFIG**: MLP simple con 1 entrada (t) y 1 salida (x).
+"""
+
 DHO_CONFIG = {
     "RUN_NAME": "Damped_Harmonic_Oscillator",
     "LEARNING_RATE": LEARNING_RATE,
@@ -75,8 +88,14 @@ DHO_CONFIG = {
         "initial": 100.0
     }
 }
+"""
+dict: Configuración para el Oscilador Armónico Amortiguado (DHO).
 
-# --- 3. Ecuación de Calor 2D (HEAT) ---
+Define un sistema masa-resorte con fricción/amortiguamiento.
+- **PHYSICS_CONFIG**: Incluye `zeta` (coeficiente de amortiguamiento).
+- **MODEL_CONFIG**: Similar al SHO pero ligeramente más profundo (6 capas) para capturar la caída exponencial.
+"""
+
 HEAT_CONFIG = {
     "RUN_NAME": "2D_Heat_Equation",
     "LEARNING_RATE": LEARNING_RATE,
@@ -108,6 +127,14 @@ HEAT_CONFIG = {
         "boundary": 100.0         # Peso para las condiciones de contorno
     }
 }
+"""
+dict: Configuración para la Ecuación de Calor 2D (HEAT).
+
+Modelo PDE dependiente del tiempo en dos dimensiones espaciales.
+- **MODEL_CONFIG**: MLP con 3 entradas (x, y, t) y 1 salida (temperatura u).
+- **PHYSICS_CONFIG**: Define `alpha` (difusividad térmica) y dominios 2D+T.
+- **DATA_CONFIG**: Requiere muestreo de frontera (`n_boundary`) además de inicial y colocación.
+"""
 
 # ==============================================================================
 # --- EXPORTACIÓN DE LA CONFIGURACIÓN ACTIVA ---
@@ -116,21 +143,27 @@ HEAT_CONFIG = {
 ALL_CONFIGS = {
     "SHO": SHO_CONFIG,
     "DHO": DHO_CONFIG,
-    "HEAT": HEAT_CONFIG  # Cambiado de "WAVE" a "HEAT"
+    "HEAT": HEAT_CONFIG
 }
+"""dict: Registro maestro que mapea nombres de problemas a sus diccionarios de configuración."""
 
 def get_active_config(problem_name: str) -> dict:
     """
-    Obtiene la configuración activa para un problema dado.
-    
+    Recupera el diccionario de configuración para un problema físico específico.
+
+    Esta función actúa como una fábrica de configuraciones, validando que el
+    problema solicitado exista en el registro maestro.
+
     Args:
-        problem_name: Nombre del problema ("SHO", "DHO", "HEAT")
-        
+        problem_name (str): Identificador del problema. 
+                            Opciones válidas: "SHO", "DHO", "HEAT".
+
     Returns:
-        Dict: Configuración completa del problema
-        
+        dict: Diccionario de configuración completo conteniendo parámetros del modelo,
+              física y entrenamiento.
+
     Raises:
-        ValueError: Si el nombre del problema no es válido
+        ValueError: Si `problem_name` no se encuentra en `ALL_CONFIGS`.
     """
     problem_name = problem_name.upper()
     if problem_name not in ALL_CONFIGS:

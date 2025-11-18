@@ -8,7 +8,7 @@ en el módulo `src.training`. La configuración del experimento
 gestiona centralmente en `src/config.py`.
 """
 
-from src.training import main as run_training
+from .training import main as run_training
 import os
 
 def main():

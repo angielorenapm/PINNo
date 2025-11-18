@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pinno-solver"
+version = "0.1.1"
+description = "Modular, interactive framework for Physics-Informed Neural Networks (PINNs)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+authors = [
+  { name="Angie Lorena Pineda Morales", email="alpinedam@udistrital.edu.co" },
+  { name="Juan Sebastian Acuña Tellez", email="jsacunat@udistrital.edu.co" },
+  { name="Pablo Patiño Bonilla", email="jppatinob@udistrital.edu.co" },
+]
+
+keywords = ["pinn", "tensorflow", "neural-networks", "physics-informed"]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "tensorflow>=2.12.0",
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "pandas>=1.5.0",
+    "scipy>=1.10.0",
+    "streamlit>=1.25.0",
+    "openpyxl>=3.1.0",
+    "Pillow>=9.0.0",
+    "pyyaml>=6.0",
+    "h5py>=3.8.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/angielorenapm/PINNo"
+
+# --- PUNTOS DE ENTRADA ---
+[project.scripts]
+pinno-desktop = "pinno.gui_desktop:main"
+pinno-cli = "pinno.cli:main"
+
+# --- CONFIGURACIÓN DE SETUPTOOLS (Corregida) ---
+# Eliminamos 'packages = ...' y dejamos solo la búsqueda automática
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pinno*"]
+exclude = ["results", "tests", "gui_modules", "__pycache__"]
