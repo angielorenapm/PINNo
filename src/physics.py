@@ -2,12 +2,12 @@
 
 """
 Módulo que define los problemas físicos y sus ecuaciones diferenciales.
-(Versión 0.0.3 - Con ecuación de calor 2D)
+(Versión 0.0.4 - Con métricas de Slicing)
 """
 import numpy as np
 import tensorflow as tf
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 
 # --- Clase Base Abstracta ---
 class PhysicsProblem(ABC):
@@ -31,19 +31,15 @@ class SimpleHarmonicOscillator(PhysicsProblem):
         self.omega = tf.constant(self.domain_config['omega'], dtype=tf.float32)
 
     def pde_residual(self, model: tf.keras.Model, t: tf.Tensor) -> tf.Tensor:
-        # ¡CORRECCIÓN! El cálculo de la primera derivada DEBE estar dentro del 'with'.
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(t)
             x = model(t)
             x_t = tape.gradient(x, t)
-        # La segunda derivada se calcula después, usando la cinta que grabó todo.
         x_tt = tape.gradient(x_t, t)
         del tape
         
-        # Comprobación para evitar el error 'None'
         if x_tt is None:
-            raise ValueError("El cálculo de la segunda derivada (x_tt) falló y devolvió None. "
-                             "Asegúrate de que el modelo sea diferenciable.")
+            raise ValueError("Error derivada segunda SHO")
                              
         return x_tt + (self.omega**2) * x
     
@@ -60,7 +56,6 @@ class DampedHarmonicOscillator(SimpleHarmonicOscillator):
         self.zeta = tf.constant(self.domain_config['zeta'], dtype=tf.float32)
 
     def pde_residual(self, model: tf.keras.Model, t: tf.Tensor) -> tf.Tensor:
-        # ¡CORRECCIÓN! Misma lógica que en SHO.
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(t)
             x = model(t)
@@ -68,8 +63,7 @@ class DampedHarmonicOscillator(SimpleHarmonicOscillator):
         x_tt = tape.gradient(x_t, t)
         del tape
 
-        if x_tt is None or x_t is None:
-             raise ValueError("El cálculo de derivadas para DHO falló.")
+        if x_tt is None: raise ValueError("Error derivada DHO")
 
         return x_tt + 2 * self.zeta * self.omega * x_t + (self.omega**2) * x
 
@@ -93,80 +87,74 @@ class HeatEquation2D(PhysicsProblem):
         self.alpha = tf.constant(self.domain_config['alpha'], dtype=tf.float32)
 
     def pde_residual(self, model: tf.keras.Model, xyt: tf.Tensor) -> tf.Tensor:
-        """
-        Calcula el residual de la ecuación de calor 2D: u_t - α(∇²u) = 0
-        
-        Args:
-            model: Modelo de red neuronal
-            xyt: Tensor de forma (batch, 3) con coordenadas [x, y, t]
-            
-        Returns:
-            Tensor: Residual de la PDE
-        """
-        # xyt: tensor de forma (batch, 3) donde [x, y, t]
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(xyt)
             u = model(xyt)
-            # Primeras derivadas
             u_x = tape.gradient(u, xyt)[:, 0:1]
             u_y = tape.gradient(u, xyt)[:, 1:2]
             u_t = tape.gradient(u, xyt)[:, 2:3]
         
-        # Segundas derivadas
         u_xx = tape.gradient(u_x, xyt)[:, 0:1]
         u_yy = tape.gradient(u_y, xyt)[:, 1:2]
         del tape
 
-        # Verificación de que las derivadas se calcularon correctamente
         if u_xx is None or u_yy is None or u_t is None:
-            raise ValueError("El cálculo de derivadas para HEAT falló.")
+            raise ValueError("Error derivadas HEAT")
 
-        # Ecuación de calor: u_t - alpha * (u_xx + u_yy) = 0
         return u_t - self.alpha * (u_xx + u_yy)
 
     def analytical_solution(self, xyt) -> np.ndarray:
-        """
-        Solución analítica para la ecuación de calor 2D con condiciones de contorno cero.
-        
-        Para una placa cuadrada [0,1]×[0,1] con condición inicial:
-        u(x,y,0) = sin(πx) * sin(πy)
-        
-        La solución es:
-        u(x,y,t) = exp(-απ²t) * sin(πx) * sin(πy)
-        """
         xyt_val = xyt.numpy() if hasattr(xyt, 'numpy') else xyt
         x = xyt_val[:, 0:1]
         y = xyt_val[:, 1:2] 
         t = xyt_val[:, 2:3]
         alpha_val = self.alpha.numpy()
-        
-        # Solución fundamental para condiciones de contorno cero
         return np.exp(-alpha_val * np.pi**2 * t) * np.sin(np.pi * x) * np.sin(np.pi * y)
 
-# --- Fábrica de Problemas Físicos ---
+    # --- NUEVO: Cálculo de métricas por slices (Requerimiento 4) ---
+    def compute_slice_metrics(self, model: tf.keras.Model, t_fix: float = 0.5, resolution: int = 50) -> Tuple[float, np.ndarray, np.ndarray]:
+        """
+        Calcula MSE en un corte de tiempo específico (slice).
+        Retorna: (mse, u_pred, u_true) para ese instante t.
+        """
+        x_d = self.domain_config['x_domain']
+        y_d = self.domain_config['y_domain']
+        
+        # Crear grid espacial
+        x = np.linspace(x_d[0], x_d[1], resolution)
+        y = np.linspace(y_d[0], y_d[1], resolution)
+        X, Y = np.meshgrid(x, y)
+        
+        # Crear tensor input con t fijo
+        T = np.full_like(X, t_fix)
+        
+        # Aplanar y apilar: (N, 3) -> [x, y, t]
+        x_flat = X.flatten()
+        y_flat = Y.flatten()
+        t_flat = T.flatten()
+        
+        input_array = np.stack([x_flat, y_flat, t_flat], axis=1).astype(np.float32)
+        input_tensor = tf.convert_to_tensor(input_array)
+        
+        # Predicción
+        u_pred_flat = model(input_tensor).numpy()
+        u_true_flat = self.analytical_solution(input_tensor)
+        
+        # Calcular MSE
+        mse = np.mean((u_pred_flat - u_true_flat)**2)
+        
+        # Reshape para visualización (50, 50)
+        return mse, u_pred_flat.reshape(resolution, resolution), u_true_flat.reshape(resolution, resolution)
+
+# --- Fábrica ---
 PROBLEMS: Dict[str, type] = {
     "SHO": SimpleHarmonicOscillator,
     "DHO": DampedHarmonicOscillator,
-    "HEAT": HeatEquation2D  # Cambiado de "WAVE" a "HEAT"
+    "HEAT": HeatEquation2D
 }
 
 def get_physics_problem(problem_name: str, config: Dict[str, Any]) -> PhysicsProblem:
-    """
-    Fábrica de problemas físicos que instancia un problema basado en su nombre.
-    
-    Args:
-        problem_name: Nombre del problema ("SHO", "DHO", "HEAT")
-        config: Configuración del problema
-        
-    Returns:
-        Instancia del problema físico
-        
-    Raises:
-        ValueError: Si el nombre del problema no es reconocido
-    """
     problem_name = problem_name.upper()
     if problem_name not in PROBLEMS:
-        valid_problems = list(PROBLEMS.keys())
-        raise ValueError(f"Problema '{problem_name}' no reconocido. Opciones: {valid_problems}")
-    problem_class = PROBLEMS[problem_name]
-    return problem_class(config)
+        raise ValueError(f"Problema '{problem_name}' no reconocido.")
+    return PROBLEMS[problem_name](config)

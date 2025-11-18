@@ -1,190 +1,262 @@
-# gui_modules/report_tab.py
-"""
-Módulo para la pestaña de reportes y métricas
-"""
+# src/gui_modules/report_tab.py
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+from tkinter import ttk, filedialog, messagebox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
+import numpy as np
+import pandas as pd  # Necesario para exportar a CSV
+import json
 
 class ReportTab(ttk.Frame):
-    """Pestaña de reportes y análisis de resultados"""
-    
+    """
+    Pestaña de Reportes y Métricas Finales.
+    Permite visualizar resultados y exportar Modelos, Gráficas y Datos.
+    """
     def __init__(self, parent, shared_state):
         super().__init__(parent)
         self.shared_state = shared_state
+        self.training_tab_ref = None
         
-        self._build_interface()
-        self._setup_event_handlers()
+        self._setup_ui()
 
-    def _build_interface(self):
-        """Construir la interfaz de la pestaña"""
-        # Panel superior de controles
-        control_frame = ttk.Frame(self, padding=10)
-        control_frame.pack(side=tk.TOP, fill=tk.X)
+    def _setup_ui(self):
+        # Layout: Panel Lateral (Métricas + Exportar) | Panel Principal (Gráfica)
+        self.main_container = ttk.Frame(self)
+        self.main_container.pack(fill="both", expand=True, padx=10, pady=10)
         
-        ttk.Button(control_frame, text="Open Report Image...", 
-                  command=self._open_image).pack(side=tk.LEFT, padx=5)
-        ttk.Button(control_frame, text="Save Report (.txt)", 
-                  command=self._save_report_txt).pack(side=tk.LEFT, padx=5)
-        ttk.Button(control_frame, text="Save Figure (.png)", 
-                  command=self._save_report_png).pack(side=tk.LEFT, padx=5)
-
-        # Panel principal
-        main_frame = ttk.Frame(self, padding=10)
-        main_frame.pack(fill=tk.BOTH, expand=True)
-
-        # Área de texto del reporte (izquierda)
-        self._build_report_text(main_frame)
+        # --- PANEL IZQUIERDO ---
+        left_panel = ttk.Frame(self.main_container, width=300)
+        left_panel.pack(side="left", fill="y", padx=(0, 10))
         
-        # Gráfica del reporte (derecha)
-        self._build_report_plot(main_frame)
+        # Título
+        ttk.Label(left_panel, text="Resultados del Entrenamiento", 
+                 font=("Helvetica", 14, "bold")).pack(pady=(0, 15), anchor="w")
 
-    def _build_report_text(self, parent):
-        """Construir el área de texto del reporte"""
-        text_frame = ttk.Labelframe(parent, text="Report", padding=8)
-        text_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 6))
+        # Botón Actualizar
+        self.btn_refresh = ttk.Button(left_panel, text="🔄 Generar Reporte", command=self.generate_report)
+        self.btn_refresh.pack(fill="x", pady=(0, 20))
+
+        # Sección 1: Métricas
+        self.stats_frame = ttk.LabelFrame(left_panel, text="Métricas Clave")
+        self.stats_frame.pack(fill="x", pady=5, ipady=5)
         
-        self.report_text = tk.Text(text_frame, height=25)
-        self.report_text.pack(fill=tk.BOTH, expand=True)
-        self.report_text.insert(tk.END, "Training report will appear here...\n")
-        self.report_text.config(state="disabled")
+        self.lbl_final_loss = self._add_stat_row("Pérdida Final:", "---")
+        self.lbl_min_loss = self._add_stat_row("Pérdida Mínima:", "---")
+        self.lbl_epochs = self._add_stat_row("Épocas Totales:", "---")
+        self.lbl_problem = self._add_stat_row("Problema:", "---")
 
-    def _build_report_plot(self, parent):
-        """Construir el área de gráfica del reporte"""
-        plot_frame = ttk.Labelframe(parent, text="Report Plot", padding=8)
-        plot_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(6, 0))
+        # Sección 2: Exportación
+        self.export_frame = ttk.LabelFrame(left_panel, text="Exportar Resultados")
+        self.export_frame.pack(fill="x", pady=20, ipady=5)
         
-        self.report_fig = plt.Figure(figsize=(6, 4.6), dpi=100)
-        self.report_ax = self.report_fig.add_subplot(111)
-        self.report_ax.set_title("No plot yet")
-        self.report_ax.grid(True, linestyle="--", linewidth=0.5)
+        self.btn_save_plot = ttk.Button(self.export_frame, text="💾 Guardar Gráfica (.png)", command=self.save_plot)
+        self.btn_save_plot.pack(fill="x", padx=5, pady=2)
         
-        self.report_canvas = FigureCanvasTkAgg(self.report_fig, master=plot_frame)
-        self.report_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.btn_save_csv = ttk.Button(self.export_frame, text="📄 Guardar Datos (.csv)", command=self.save_data)
+        self.btn_save_csv.pack(fill="x", padx=5, pady=2)
+        
+        self.btn_save_model = ttk.Button(self.export_frame, text="🧠 Guardar Modelo (.keras)", command=self.save_model)
+        self.btn_save_model.pack(fill="x", padx=5, pady=2)
+        
+        # Estado inicial botones deshabilitados
+        self._toggle_export_buttons(False)
 
-    def _setup_event_handlers(self):
-        """Configurar manejadores de eventos"""
-        # Por ahora, no hay eventos específicos
-        pass
+        # Sección 3: Configuración (Solo lectura)
+        self.config_frame = ttk.LabelFrame(left_panel, text="Configuración Usada")
+        # --- CORRECCIÓN AQUÍ: 'fill' solo se usa una vez ---
+        self.config_frame.pack(fill="both", expand=True, pady=10) 
+        
+        self.txt_config = tk.Text(self.config_frame, height=8, width=30, font=("Consolas", 9), bg="#f4f6f6")
+        self.txt_config.pack(fill="both", expand=True, padx=5, pady=5)
+        self.txt_config.insert("1.0", "Entrena un modelo para ver detalles.")
+        self.txt_config.config(state="disabled")
 
-    def _open_image(self):
-        """Abrir una imagen externa para el reporte"""
-        path = filedialog.askopenfilename(
-            title="Select report image",
-            filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.bmp"), ("All files", "*.*")]
-        )
-        if not path:
+        # --- PANEL DERECHO: Gráfica ---
+        right_panel = ttk.Frame(self.main_container)
+        right_panel.pack(side="right", fill="both", expand=True)
+        
+        self.fig, self.ax = plt.subplots(figsize=(6, 5), dpi=100)
+        self.fig.patch.set_facecolor('#f0f2f5')
+        
+        self.canvas = FigureCanvasTkAgg(self.fig, master=right_panel)
+        self.canvas.get_tk_widget().pack(fill="both", expand=True)
+        
+        self._reset_plot()
+
+    def _add_stat_row(self, label, value):
+        row = ttk.Frame(self.stats_frame)
+        row.pack(fill="x", padx=10, pady=3)
+        ttk.Label(row, text=label, font=("Helvetica", 9, "bold"), width=15).pack(side="left")
+        lbl_val = ttk.Label(row, text=value, font=("Helvetica", 9))
+        lbl_val.pack(side="right")
+        return lbl_val
+
+    def _toggle_export_buttons(self, state: bool):
+        s = "normal" if state else "disabled"
+        self.btn_save_plot.config(state=s)
+        self.btn_save_csv.config(state=s)
+        self.btn_save_model.config(state=s)
+
+    def _reset_plot(self):
+        self.ax.clear()
+        self.ax.text(0.5, 0.5, "No hay datos disponibles.\nEntrena un modelo y pulsa 'Generar Reporte'.", 
+                    ha='center', va='center', color='#7f8c8d')
+        self.ax.axis('off')
+        self.canvas.draw()
+
+    def generate_report(self):
+        trainer = self.shared_state.get('trainer')
+        
+        if not trainer or not trainer.loss_history:
+            self._reset_plot()
+            self._toggle_export_buttons(False)
             return
+
+        # Habilitar botones
+        self._toggle_export_buttons(True)
+
+        # 1. Datos
+        history = np.array(trainer.loss_history)
+        epochs = len(history)
+        final_loss = history[-1]
+        min_loss = np.min(history)
+        problem = self.shared_state.get('problem_name', tk.StringVar(value="?")).get()
         
+        # 2. Etiquetas
+        self.lbl_final_loss.config(text=f"{final_loss:.2e}")
+        self.lbl_min_loss.config(text=f"{min_loss:.2e}")
+        self.lbl_epochs.config(text=str(epochs))
+        self.lbl_problem.config(text=problem)
+
+        # 3. Configuración
+        self.txt_config.config(state="normal")
+        self.txt_config.delete("1.0", tk.END)
+        config_str = self._format_config_text(trainer.config, problem)
+        self.txt_config.insert("1.0", config_str)
+        self.txt_config.config(state="disabled")
+
+        # 4. Gráfica
+        self.ax.clear()
+        self.ax.axis('on')
+        self.ax.plot(history, label='Total Loss', color='#2980b9', linewidth=1.5)
+        
+        if len(history) > 50:
+            window = max(int(len(history)/50), 5)
+            moving_avg = np.convolve(history, np.ones(window)/window, mode='valid')
+            self.ax.plot(range(window-1, len(history)), moving_avg, 
+                        color='#e74c3c', linestyle='--', linewidth=1, label='Tendencia')
+
+        self.ax.set_yscale('log')
+        self.ax.set_title(f"Convergencia: {problem}", fontsize=12)
+        self.ax.set_xlabel("Épocas")
+        self.ax.set_ylabel("Loss")
+        self.ax.grid(True, which="both", linestyle='--', alpha=0.4)
+        self.ax.legend()
+        
+        self.fig.tight_layout()
+        self.canvas.draw()
+
+    def _format_config_text(self, config, problem):
+        s = f"Problem: {problem}\n"
+        s += f"LR: {config.get('LEARNING_RATE')}\n"
+        if 'MODEL_CONFIG' in config:
+            mc = config['MODEL_CONFIG']
+            s += f"Layers: {mc.get('num_layers')}\n"
+            s += f"Neurons: {mc.get('hidden_dim')}\n"
+            s += f"Activ: {mc.get('activation')}\n"
+        if 'PHYSICS_CONFIG' in config:
+            s += "\nPhysics:\n"
+            for k, v in config['PHYSICS_CONFIG'].items():
+                if isinstance(v, (int, float)):
+                    s += f"  {k}: {v}\n"
+        return s
+
+    # --- MÉTODOS DE EXPORTACIÓN ---
+
+    def save_plot(self):
+        """Guarda la gráfica actual como imagen."""
         try:
-            img = plt.imread(path)
-            self.report_ax.clear()
-            self.report_ax.imshow(img)
-            self.report_ax.axis("off")
-            self.report_fig.tight_layout()
-            self.report_canvas.draw()
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".png",
+                filetypes=[("PNG Image", "*.png"), ("JPEG Image", "*.jpg"), ("PDF Document", "*.pdf")],
+                title="Guardar Gráfica de Entrenamiento"
+            )
+            if file_path:
+                self.fig.savefig(file_path, dpi=300)
+                messagebox.showinfo("Éxito", f"Gráfica guardada en:\n{file_path}")
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to load image:\n\n{e}")
+            messagebox.showerror("Error", f"No se pudo guardar la imagen:\n{e}")
 
-    def _save_report_txt(self):
-        """Guardar el reporte como texto"""
-        path = filedialog.asksaveasfilename(
-            title="Save report as",
-            defaultextension=".txt",
-            filetypes=[("Text file", "*.txt")]
-        )
-        if not path:
-            return
-        
+    def save_data(self):
+        """Guarda el historial de pérdida en un CSV."""
+        trainer = self.shared_state.get('trainer')
+        if not trainer: return
+
         try:
-            content = self.report_text.get("1.0", tk.END)
-            with open(path, "w", encoding="utf-8") as f:
-                f.write(content.strip() + "\n")
-            messagebox.showinfo("Saved", f"Report saved to:\n{path}")
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV File", "*.csv"), ("Excel File", "*.xlsx")],
+                title="Guardar Datos de Entrenamiento"
+            )
+            if file_path:
+                # Crear DataFrame
+                history = trainer.loss_history
+                df = pd.DataFrame({
+                    'epoch': range(1, len(history) + 1),
+                    'total_loss': history
+                })
+                
+                # Guardar
+                if file_path.endswith('.xlsx'):
+                    df.to_excel(file_path, index=False)
+                else:
+                    df.to_csv(file_path, index=False)
+                    
+                messagebox.showinfo("Éxito", f"Datos guardados en:\n{file_path}")
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to save report:\n\n{e}")
+            messagebox.showerror("Error", f"No se pudieron guardar los datos:\n{e}")
 
-    def _save_report_png(self):
-        """Guardar la gráfica como PNG"""
-        path = filedialog.asksaveasfilename(
-            title="Save figure as",
-            defaultextension=".png",
-            filetypes=[("PNG image", "*.png")]
-        )
-        if not path:
-            return
-        
+    def save_model(self):
+        """Guarda el modelo de Keras (.keras o .h5)."""
+        trainer = self.shared_state.get('trainer')
+        if not trainer or not trainer.model: return
+
         try:
-            self.report_fig.savefig(path, dpi=150, bbox_inches="tight")
-            messagebox.showinfo("Saved", f"Figure saved to:\n{path}")
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".keras",
+                filetypes=[("Keras Model", "*.keras"), ("HDF5 Model", "*.h5")],
+                title="Guardar Modelo Entrenado"
+            )
+            if file_path:
+                # Guardar usando la API nativa de Keras
+                trainer.model.save(file_path)
+                
+                # Opcional: Guardar configuración JSON al lado para recordar parámetros físicos
+                config_path = file_path + ".config.json"
+                with open(config_path, 'w') as f:
+                    # Convertir valores numpy a tipos nativos de python para JSON
+                    clean_config = self._make_serializable(trainer.config)
+                    json.dump(clean_config, f, indent=4)
+
+                messagebox.showinfo("Éxito", f"Modelo guardado exitosamente.\nConfiguración guardada en .json adjunto.")
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to save figure:\n\n{e}")
+            messagebox.showerror("Error", f"No se pudo guardar el modelo:\n{e}")
 
-    def update_report(self, text_content, plot_data=None):
-        """Actualizar el contenido del reporte"""
-        # Actualizar texto
-        self.report_text.config(state="normal")
-        self.report_text.delete("1.0", tk.END)
-        self.report_text.insert(tk.END, text_content)
-        self.report_text.config(state="disabled")
+    def _make_serializable(self, config):
+        """Convierte objetos no serializables (como float32) a nativos."""
+        import copy
+        cfg = copy.deepcopy(config)
         
-        # Actualizar gráfica si se proporcionan datos
-        if plot_data is not None:
-            x, y_true, y_pred = plot_data
-            self.report_ax.clear()
-            self.report_ax.plot(x, y_true, 'r--', label="Analytical")
-            self.report_ax.plot(x, y_pred, 'b-', label="Predicted")
-            self.report_ax.set_title("Predicted vs Analytical Solution")
-            self.report_ax.set_xlabel("Domain")
-            self.report_ax.set_ylabel("Magnitude")
-            self.report_ax.grid(True, linestyle="--", linewidth=0.5)
-            self.report_ax.legend()
-            self.report_fig.tight_layout()
-            self.report_canvas.draw()
-
-    def on_state_change(self, key, value):
-        """Manejar cambios en el estado global"""
-        # Por ejemplo, cuando termina el entrenamiento, se podría actualizar el reporte
-        if key == 'trainer' and value is not None:
-            # Aquí se podría generar un reporte automáticamente
-            pass
-
-    def update_report(self, text_content=None, plot_data=None):
-        """Actualizar el contenido del reporte desde otras pestañas"""
-        if text_content:
-            # Actualizar texto
-            self.report_text.config(state="normal")
-            self.report_text.delete("1.0", tk.END)
-            self.report_text.insert(tk.END, text_content)
-            self.report_text.config(state="disabled")
-        
-        # Actualizar gráfica si se proporcionan datos
-        if plot_data is not None:
-            x, y_true, y_pred = plot_data
-            self._update_report_plot(x, y_true, y_pred)
-
-    def _update_report_plot(self, x, y_true, y_pred):
-        """Actualizar la gráfica del reporte"""
-        try:
-            self.report_ax.clear()
-            self.report_ax.plot(x, y_true, 'r--', label="Analytical Solution")
-            self.report_ax.plot(x, y_pred, 'b-', label="PINN Prediction", linewidth=2)
-            self.report_ax.set_title("Predicted vs Analytical Solution")
-            self.report_ax.set_xlabel("Domain")
-            self.report_ax.set_ylabel("Solution")
-            self.report_ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.7)
-            self.report_ax.legend()
-            self.report_fig.tight_layout()
-            self.report_canvas.draw()
-        except Exception as e:
-            print(f"Error updating report plot: {e}")
+        def convert(item):
+            if isinstance(item, dict):
+                return {k: convert(v) for k, v in item.items()}
+            elif isinstance(item, list):
+                return [convert(v) for v in item]
+            elif hasattr(item, 'item'): # Numpy types
+                return item.item()
+            return item
+            
+        return convert(cfg)
 
     def on_shared_state_change(self, key, value):
-        """Manejar cambios en el estado global compartido"""
-        if key == 'last_metrics_report':
-            self.update_report(text_content=value)
-        elif key == 'last_plot_data' and value is not None:
-            x, y_true, y_pred = value
-            self._update_report_plot(x, y_true, y_pred)
+        pass
