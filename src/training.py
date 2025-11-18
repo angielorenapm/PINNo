@@ -1,11 +1,11 @@
-#src/training.py
 """
 Módulo principal de entrenamiento para PINNs.
-(Versión 0.0.4.2 - Con mejoras para entrenamiento con CSV)
+(Versión 0.0.5 - Con corrección para Heat Equation y mejoras CSV)
 """
 import os
 import tensorflow as tf
 import pandas as pd
+import numpy as np
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
@@ -45,14 +45,35 @@ class PINNTrainer:
             self.model = get_model(self.config["MODEL_NAME"], model_config)
             
             # Initialize model with a forward pass to build it
+            input_dim = model_config["input_dim"]
+            
             if self.use_csv:
                 # For CSV mode, initialize with data
-                t_data, x_data = self._get_csv_training_data()
-                _ = self.model(t_data[:1])  # Build model with sample data
+                if self.active_problem == "HEAT":
+                    # For heat equation, we need (x, y, t) data
+                    x_data, y_data, t_data, u_data = self._get_csv_training_data_heat()
+                    sample_input = tf.concat([x_data[:1], y_data[:1], t_data[:1]], axis=1)
+                else:
+                    # For SHO/DHO
+                    t_data, x_data = self._get_csv_training_data()
+                    sample_input = t_data[:1]
+                _ = self.model(sample_input)
             else:
-                # For analytical mode, initialize with domain sample
-                t_domain = self.config["PHYSICS_CONFIG"]["t_domain"]
-                sample_input = tf.constant([[t_domain[0]]], dtype=tf.float32)
+                # For analytical mode, initialize with proper domain sample based on input dimension
+                if input_dim == 1:
+                    # 1D problems (SHO, DHO)
+                    t_domain = self.config["PHYSICS_CONFIG"]["t_domain"]
+                    sample_input = tf.constant([[t_domain[0]]], dtype=tf.float32)
+                elif input_dim == 3:
+                    # 3D problems (HEAT) - need (x, y, t)
+                    x_domain = self.config["PHYSICS_CONFIG"]["x_domain"]
+                    y_domain = self.config["PHYSICS_CONFIG"]["y_domain"]
+                    t_domain = self.config["PHYSICS_CONFIG"]["t_domain"]
+                    sample_input = tf.constant([[x_domain[0], y_domain[0], t_domain[0]]], dtype=tf.float32)
+                else:
+                    # Generic fallback
+                    sample_input = tf.constant([[0.0] * input_dim], dtype=tf.float32)
+                    
                 _ = self.model(sample_input)
             
             # Física
@@ -86,13 +107,14 @@ class PINNTrainer:
             )
             
             print(f"Components initialized for {self.active_problem} - Mode: {'CSV' if self.use_csv else 'Analytical'}")
+            print(f"Model input dimension: {input_dim}")
             
         except Exception as e:
             print(f"Error initializing components: {e}")
             raise
 
     def _get_csv_training_data(self):
-        """Get CSV data for model initialization"""
+        """Get CSV data for SHO/DHO model initialization"""
         if not self.use_csv or self.csv_data is None:
             return None, None
             
@@ -103,6 +125,26 @@ class PINNTrainer:
         x_data = self.csv_data[disp_col].values.reshape(-1, 1)
         
         return tf.constant(t_data, dtype=tf.float32), tf.constant(x_data, dtype=tf.float32)
+
+    def _get_csv_training_data_heat(self):
+        """Get CSV data for heat equation initialization"""
+        if not self.use_csv or self.csv_data is None:
+            return None, None, None, None
+            
+        x_col = self.column_mapping['x']
+        y_col = self.column_mapping['y'] 
+        time_col = self.column_mapping['time']
+        temp_col = self.column_mapping['temperature']
+        
+        x_data = self.csv_data[x_col].values.reshape(-1, 1)
+        y_data = self.csv_data[y_col].values.reshape(-1, 1)
+        t_data = self.csv_data[time_col].values.reshape(-1, 1)
+        u_data = self.csv_data[temp_col].values.reshape(-1, 1)
+        
+        return (tf.constant(x_data, dtype=tf.float32), 
+                tf.constant(y_data, dtype=tf.float32),
+                tf.constant(t_data, dtype=tf.float32),
+                tf.constant(u_data, dtype=tf.float32))
 
     def _setup_experiment(self):
         """Configura el experimento"""
