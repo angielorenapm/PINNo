@@ -1,0 +1,327 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pinno.gui_modules.info_tab &mdash; PINNo Solver 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PINNo Solver
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">pinno</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PINNo Solver</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pinno.gui_modules.info_tab</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pinno.gui_modules.info_tab</h1><div class="highlight"><pre>
+<span></span><span class="c1"># src/gui_modules/info_tab.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tkinter</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tk</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tkinter</span><span class="w"> </span><span class="kn">import</span> <span class="n">ttk</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tkinter</span><span class="w"> </span><span class="kn">import</span> <span class="n">font</span> <span class="k">as</span> <span class="n">tkfont</span>
+
+<div class="viewcode-block" id="InfoTab">
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.info_tab.InfoTab">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InfoTab</span><span class="p">(</span><span class="n">ttk</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Educational Tab: Neural Networks &amp; PINNs for Beginners.</span>
+<span class="sd">    Styled with a modern &#39;Card&#39; layout for better readability.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">shared_state</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shared_state</span> <span class="o">=</span> <span class="n">shared_state</span>
+        
+        <span class="c1"># --- Design Palette ---</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">colors</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;bg_main&quot;</span><span class="p">:</span> <span class="s2">&quot;#F0F2F5&quot;</span><span class="p">,</span>       <span class="c1"># Soft Gray background</span>
+            <span class="s2">&quot;card_bg&quot;</span><span class="p">:</span> <span class="s2">&quot;#FFFFFF&quot;</span><span class="p">,</span>       <span class="c1"># White cards</span>
+            <span class="s2">&quot;text_header&quot;</span><span class="p">:</span> <span class="s2">&quot;#2C3E50&quot;</span><span class="p">,</span>   <span class="c1"># Dark Blue-Grey</span>
+            <span class="s2">&quot;text_body&quot;</span><span class="p">:</span> <span class="s2">&quot;#4A4A4A&quot;</span><span class="p">,</span>     <span class="c1"># Soft Black</span>
+            <span class="s2">&quot;accent&quot;</span><span class="p">:</span> <span class="s2">&quot;#3498DB&quot;</span><span class="p">,</span>        <span class="c1"># Bright Blue</span>
+            <span class="s2">&quot;highlight&quot;</span><span class="p">:</span> <span class="s2">&quot;#E8F6F3&quot;</span><span class="p">,</span>     <span class="c1"># Light Teal for highlights</span>
+            <span class="s2">&quot;code_bg&quot;</span><span class="p">:</span> <span class="s2">&quot;#2E3440&quot;</span><span class="p">,</span>       <span class="c1"># Dark for code blocks</span>
+            <span class="s2">&quot;code_fg&quot;</span><span class="p">:</span> <span class="s2">&quot;#D8DEE9&quot;</span>        <span class="c1"># Light text for code</span>
+        <span class="p">}</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_fonts</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_content</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_fonts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize custom fonts for a cleaner look.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fonts</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;h1&quot;</span><span class="p">:</span> <span class="n">tkfont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s2">&quot;Segoe UI&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;h2&quot;</span><span class="p">:</span> <span class="n">tkfont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s2">&quot;Segoe UI&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="n">tkfont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s2">&quot;Segoe UI&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">11</span><span class="p">),</span>
+            <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="n">tkfont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s2">&quot;Consolas&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+            <span class="s2">&quot;bold&quot;</span><span class="p">:</span> <span class="n">tkfont</span><span class="o">.</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s2">&quot;Segoe UI&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_content</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># --- Scrollable Canvas Setup ---</span>
+        <span class="n">canvas</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Canvas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;bg_main&quot;</span><span class="p">],</span> <span class="n">highlightthickness</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">scrollbar</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Scrollbar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s2">&quot;vertical&quot;</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">canvas</span><span class="o">.</span><span class="n">yview</span><span class="p">)</span>
+        
+        <span class="c1"># The main frame inside the canvas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;bg_main&quot;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span>
+            <span class="s2">&quot;&lt;Configure&gt;&quot;</span><span class="p">,</span>
+            <span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="n">canvas</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">scrollregion</span><span class="o">=</span><span class="n">canvas</span><span class="o">.</span><span class="n">bbox</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">))</span>
+        <span class="p">)</span>
+
+        <span class="n">canvas_window</span> <span class="o">=</span> <span class="n">canvas</span><span class="o">.</span><span class="n">create_window</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">window</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="s2">&quot;nw&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Responsive width handling</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">on_canvas_configure</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+            <span class="n">canvas</span><span class="o">.</span><span class="n">itemconfig</span><span class="p">(</span><span class="n">canvas_window</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">event</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+        <span class="n">canvas</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s2">&quot;&lt;Configure&gt;&quot;</span><span class="p">,</span> <span class="n">on_canvas_configure</span><span class="p">)</span>
+
+        <span class="n">canvas</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">yscrollcommand</span><span class="o">=</span><span class="n">scrollbar</span><span class="o">.</span><span class="n">set</span><span class="p">)</span>
+        <span class="n">canvas</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">side</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">scrollbar</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">side</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+
+        <span class="c1"># --- CONTENT GENERATION ---</span>
+        
+        <span class="c1"># Header</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_header_banner</span><span class="p">(</span><span class="s2">&quot;🧠 PINNs: A Visual Guide&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Card 1: What is a Neural Network?</span>
+        <span class="n">card1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_card</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_card_title</span><span class="p">(</span><span class="n">card1</span><span class="p">,</span> <span class="s2">&quot;Lesson 1: The &#39;Black Box&#39; (Neural Networks)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_text</span><span class="p">(</span><span class="n">card1</span><span class="p">,</span> 
+            <span class="s2">&quot;Imagine a Neural Network (NN) as a machine with thousands of tuning knobs (parameters). &quot;</span>
+            <span class="s2">&quot;You feed a number in one side (e.g., time t=0) and it spits out a prediction &quot;</span>
+            <span class="s2">&quot;(e.g., position x=1.2).&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_diagram</span><span class="p">(</span><span class="n">card1</span><span class="p">,</span> <span class="s2">&quot;[ Input: t ]  ──&gt;  [ 🕸️ NEURAL NET ]  ──&gt;  [ Output: x ]&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_text</span><span class="p">(</span><span class="n">card1</span><span class="p">,</span>
+            <span class="s2">&quot;Initially, the machine is &#39;dumb&#39;. It guesses randomly. To teach it, we need three things:&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_bullet</span><span class="p">(</span><span class="n">card1</span><span class="p">,</span> <span class="s2">&quot;Layers &amp; Neurons&quot;</span><span class="p">,</span> <span class="s2">&quot;The brain structure. More layers = deeper understanding of complex patterns.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_bullet</span><span class="p">(</span><span class="n">card1</span><span class="p">,</span> <span class="s2">&quot;Activation Functions&quot;</span><span class="p">,</span> <span class="s2">&quot;Mathematical sparks that allow the network to learn curves, not just straight lines.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_bullet</span><span class="p">(</span><span class="n">card1</span><span class="p">,</span> <span class="s2">&quot;Backpropagation&quot;</span><span class="p">,</span> <span class="s2">&quot;The learning process. It compares the guess to the real answer, calculates the error, and adjusts the knobs to do better next time.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Card 2: The Problem</span>
+        <span class="n">card2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_card</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_card_title</span><span class="p">(</span><span class="n">card2</span><span class="p">,</span> <span class="s2">&quot;Lesson 2: Why standard AI fails in Physics&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_text</span><span class="p">(</span><span class="n">card2</span><span class="p">,</span>
+            <span class="s2">&quot;Standard AI is &#39;Data Hungry&#39;. It only knows what you show it. If you train it on a pendulum swinging &quot;</span>
+            <span class="s2">&quot;for 10 seconds, it has no idea what happens at second 11. It might predict the pendulum flies &quot;</span>
+            <span class="s2">&quot;into space because it doesn&#39;t know gravity exists.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Card 3: The PINN Solution</span>
+        <span class="n">card3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_card</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_card_title</span><span class="p">(</span><span class="n">card3</span><span class="p">,</span> <span class="s2">&quot;Lesson 3: The Magic of PINNs&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_text</span><span class="p">(</span><span class="n">card3</span><span class="p">,</span>
+            <span class="s2">&quot;A Physics-Informed Neural Network (PINN) is different. We don&#39;t just punish the network &quot;</span>
+            <span class="s2">&quot;for missing the data points. We also punish it if it violates the Laws of Physics.&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_code_block</span><span class="p">(</span><span class="n">card3</span><span class="p">,</span> <span class="s2">&quot;TOTAL LOSS = DATA ERROR + PHYSICS ERROR&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_text</span><span class="p">(</span><span class="n">card3</span><span class="p">,</span> 
+            <span class="s2">&quot;• Data Error: How far is the prediction from the experimental measurements?</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;• Physics Error: We plug the prediction into the Differential Equation (e.g., F=ma). If the equation doesn&#39;t balance to zero, the network gets a penalty.&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_highlight_box</span><span class="p">(</span><span class="n">card3</span><span class="p">,</span> 
+            <span class="s2">&quot;💡 The Superpower: Because the network knows the laws of physics, it can solve problems &quot;</span>
+            <span class="s2">&quot;with very little data, or sometimes NO data at all!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Card 4: Hyperparameters Guide</span>
+        <span class="n">card4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_card</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_card_title</span><span class="p">(</span><span class="n">card4</span><span class="p">,</span> <span class="s2">&quot;🎛️ Configuration Guide (The Buttons)&quot;</span><span class="p">)</span>
+        
+        <span class="n">terms</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;Epochs&quot;</span><span class="p">,</span> <span class="s2">&quot;How many times the network loops through the entire learning process. 15,000 epochs means it tried to improve 15,000 times.&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;Learning Rate&quot;</span><span class="p">,</span> <span class="s2">&quot;The step size for corrections. High (0.1) = wild jumps. Low (0.0001) = tiny steps. We usually want a balance (e.g., 0.001).&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;Hidden Layers&quot;</span><span class="p">,</span> <span class="s2">&quot;The depth of the brain. Simple spring problems need 3-4 layers. Complex heat flows need 6+.&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;Activation (Tanh)&quot;</span><span class="p">,</span> <span class="s2">&quot;For Physics, &#39;Tanh&#39; is king. Unlike &#39;ReLU&#39; (used in image AI), Tanh is smooth and curvy, perfect for derivatives.&quot;</span><span class="p">)</span>
+        <span class="p">]</span>
+        
+        <span class="k">for</span> <span class="n">term</span><span class="p">,</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">terms</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_definition</span><span class="p">(</span><span class="n">card4</span><span class="p">,</span> <span class="n">term</span><span class="p">,</span> <span class="n">desc</span><span class="p">)</span>
+
+        <span class="c1"># Footer padding</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;bg_main&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">pack</span><span class="p">()</span>
+
+    <span class="c1"># --- UI HELPER METHODS (The Styling Engine) ---</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_header_banner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a full-width header.&quot;&quot;&quot;</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main_frame</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;accent&quot;</span><span class="p">],</span> <span class="n">height</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">pack_propagate</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span> <span class="c1"># Force height</span>
+        
+        <span class="n">lbl</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Segoe UI&quot;</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="s2">&quot;bold&quot;</span><span class="p">),</span> 
+                      <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;accent&quot;</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+        <span class="n">lbl</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">side</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_card</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a white card with a subtle visual lift.&quot;&quot;&quot;</span>
+        <span class="c1"># Outer container for padding</span>
+        <span class="n">outer</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;bg_main&quot;</span><span class="p">],</span> <span class="n">padx</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">outer</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># The Card itself</span>
+        <span class="n">card</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">outer</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;card_bg&quot;</span><span class="p">],</span> <span class="n">bd</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">relief</span><span class="o">=</span><span class="s2">&quot;flat&quot;</span><span class="p">)</span>
+        <span class="n">card</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">ipadx</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">ipady</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+        
+        <span class="c1"># A subtle bottom border to simulate shadow/depth</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">outer</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="s2">&quot;#D1D5DB&quot;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># Shadow line</span>
+        
+        <span class="k">return</span> <span class="n">card</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_card_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fonts</span><span class="p">[</span><span class="s2">&quot;h2&quot;</span><span class="p">],</span> 
+                <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;card_bg&quot;</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;text_header&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
+        
+        <span class="c1"># Separator line</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;accent&quot;</span><span class="p">],</span> <span class="n">height</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fonts</span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">],</span> 
+                <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;card_bg&quot;</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;text_body&quot;</span><span class="p">],</span> 
+                <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">wraplength</span><span class="o">=</span><span class="mi">900</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_diagram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ASCII Diagram styling&quot;&quot;&quot;</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;bg_main&quot;</span><span class="p">],</span> <span class="n">bd</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fonts</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">],</span> 
+                <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;bg_main&quot;</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;#555&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">pady</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_bullet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">desc</span><span class="p">):</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;card_bg&quot;</span><span class="p">])</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        
+        <span class="c1"># Bullet dot</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;•&quot;</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Arial&quot;</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">fg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;accent&quot;</span><span class="p">],</span> 
+                <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;card_bg&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">side</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Content</span>
+        <span class="n">content_frame</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;card_bg&quot;</span><span class="p">])</span>
+        <span class="n">content_frame</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">side</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">content_frame</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fonts</span><span class="p">[</span><span class="s2">&quot;bold&quot;</span><span class="p">],</span> 
+                <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;card_bg&quot;</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;text_header&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">content_frame</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fonts</span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">],</span> 
+                <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;card_bg&quot;</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;text_body&quot;</span><span class="p">],</span> 
+                <span class="n">wraplength</span><span class="o">=</span><span class="mi">850</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_code_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;code_bg&quot;</span><span class="p">])</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Consolas&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;bold&quot;</span><span class="p">),</span> 
+                <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;code_bg&quot;</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;code_fg&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">pady</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_highlight_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;highlight&quot;</span><span class="p">],</span> 
+                        <span class="n">bd</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">relief</span><span class="o">=</span><span class="s2">&quot;solid&quot;</span><span class="p">,</span> <span class="n">highlightbackground</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;accent&quot;</span><span class="p">])</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fonts</span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">],</span> 
+                <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;highlight&quot;</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="s2">&quot;#004d40&quot;</span><span class="p">,</span> 
+                <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">wraplength</span><span class="o">=</span><span class="mi">850</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">pady</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">term</span><span class="p">,</span> <span class="n">desc</span><span class="p">):</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;card_bg&quot;</span><span class="p">])</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+        
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">term</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fonts</span><span class="p">[</span><span class="s2">&quot;bold&quot;</span><span class="p">],</span> 
+                <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;card_bg&quot;</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;accent&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fonts</span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">],</span> 
+                <span class="n">bg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;card_bg&quot;</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="s2">&quot;text_body&quot;</span><span class="p">],</span> 
+                <span class="n">wraplength</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InfoTab.on_shared_state_change">
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.info_tab.InfoTab.on_shared_state_change">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_shared_state_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Universidad Distrital Francisco José de Caldas.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

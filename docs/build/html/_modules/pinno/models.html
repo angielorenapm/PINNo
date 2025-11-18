@@ -1,0 +1,237 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pinno.models &mdash; PINNo Solver 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PINNo Solver
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">pinno</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PINNo Solver</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pinno.models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pinno.models</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Módulo para la definición de arquitecturas de redes neuronales usando TensorFlow/Keras.</span>
+
+<span class="sd">Este script actúa como una fábrica de modelos, conteniendo las clases que definen</span>
+<span class="sd">la topología de las redes neuronales (ej. Perceptrón Multicapa) utilizadas para</span>
+<span class="sd">aproximar la solución de las Ecuaciones Diferenciales Parciales (EDP).</span>
+
+<span class="sd">Design:</span>
+<span class="sd">    El módulo está desacoplado de la física del problema; solo define grafos de</span>
+<span class="sd">    computación (Input -&gt; Hidden Layers -&gt; Output).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="c1"># ==============================================================================</span>
+<span class="c1"># --- DEFINICIÓN DE ARQUITECTURAS ---</span>
+<span class="c1"># ==============================================================================</span>
+
+<div class="viewcode-block" id="PINN_MLP">
+<a class="viewcode-back" href="../../pinno.html#pinno.models.PINN_MLP">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PINN_MLP</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Red Neuronal Densa de Múltiples Capas (MLP) para una PINN.</span>
+<span class="sd">    </span>
+<span class="sd">    Implementa una arquitectura Feed-Forward (hacia adelante) estándar utilizando</span>
+<span class="sd">    la API de subclases de Keras. Es la arquitectura base más común para resolver</span>
+<span class="sd">    EDPs simples.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        network (tf.keras.Sequential): El contenedor secuencial de capas Keras</span>
+<span class="sd">            que define el grafo de operaciones.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">input_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">output_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">hidden_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tanh&quot;</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inicializa la arquitectura de la red neuronal.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_dim (int): Dimensión del espacio de entrada (ej. 1 para t, 3 para x,y,t).</span>
+<span class="sd">            output_dim (int): Dimensión de la salida (ej. 1 para u(x,t)).</span>
+<span class="sd">            hidden_dim (int): Número de neuronas en cada capa oculta.</span>
+<span class="sd">            num_layers (int): Número total de capas (incluyendo entrada y salida).</span>
+<span class="sd">                              Debe ser al menos 2.</span>
+<span class="sd">            activation (str, optional): Función de activación no lineal para las capas ocultas.</span>
+<span class="sd">                                        Se recomienda &quot;tanh&quot; para problemas físicos por su</span>
+<span class="sd">                                        suavidad en las derivadas. Defaults to &quot;tanh&quot;.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Si `num_layers` es menor a 2.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">num_layers</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;El número de capas debe ser al menos 2 (entrada y salida).&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Construcción dinámica de la lista de capas</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># 1. Capa de entrada (implícita en la primera densa o explícita)</span>
+        <span class="c1"># Usamos input_shape en la primera capa para definir la entrada</span>
+        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,)))</span>
+        
+        <span class="c1"># 2. Capas ocultas intermedias</span>
+        <span class="c1"># Restamos 2 porque ya añadimos la primera oculta (conectada a input) y falta la de salida</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_layers</span> <span class="o">-</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">))</span>
+            
+        <span class="c1"># 3. Capa de salida (Lineal, sin activación usualmente para regresión)</span>
+        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">output_dim</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PINN_MLP.call">
+<a class="viewcode-back" href="../../pinno.html#pinno.models.PINN_MLP.call">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Realiza el paso hacia adelante (Forward Pass) de la red.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (tf.Tensor): Tensor de entrada con forma (batch_size, input_dim).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tf.Tensor: Tensor de salida con la aproximación de la solución, </span>
+<span class="sd">                       con forma (batch_size, output_dim).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># ==============================================================================</span>
+<span class="c1"># --- FÁBRICA DE MODELOS (FACTORY PATTERN) ---</span>
+<span class="c1"># ==============================================================================</span>
+
+<span class="n">MODELS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;mlp&quot;</span><span class="p">:</span> <span class="n">PINN_MLP</span>
+<span class="p">}</span>
+<span class="sd">&quot;&quot;&quot;dict: Registro de arquitecturas disponibles mapeadas por nombre.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="get_model">
+<a class="viewcode-back" href="../../pinno.html#pinno.models.get_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Instancia una red neuronal a partir de su nombre y configuración.</span>
+
+<span class="sd">    Esta función actúa como un despachador (Factory) que simplifica la creación</span>
+<span class="sd">    de modelos sin necesidad de importar las clases específicas en el código cliente.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_name (str): Identificador del modelo (ej. &quot;mlp&quot;). Insensible a mayúsculas.</span>
+<span class="sd">        model_config (Dict[str, Any]): Diccionario de hiperparámetros que se pasarán</span>
+<span class="sd">                                       como **kwargs al constructor del modelo.</span>
+<span class="sd">                                       Ej: {&#39;input_dim&#39;: 1, &#39;hidden_dim&#39;: 64...}</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tf.keras.Model: Una instancia compilada (o lista para compilar) del modelo Keras.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: Si `model_name` no se encuentra en el registro `MODELS`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">model_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MODELS</span><span class="p">:</span>
+        <span class="n">valid_options</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">MODELS</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Modelo &#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&#39; no reconocido. Opciones: </span><span class="si">{</span><span class="n">valid_options</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="n">model_class</span> <span class="o">=</span> <span class="n">MODELS</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span>
+    <span class="c1"># Desempaquetar configuración directamente en el constructor</span>
+    <span class="k">return</span> <span class="n">model_class</span><span class="p">(</span><span class="o">**</span><span class="n">model_config</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Universidad Distrital Francisco José de Caldas.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

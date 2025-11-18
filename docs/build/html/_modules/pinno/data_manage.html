@@ -1,0 +1,340 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pinno.data_manage &mdash; PINNo Solver 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PINNo Solver
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">pinno</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PINNo Solver</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pinno.data_manage</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pinno.data_manage</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Módulo para gestión y muestreo de datos en PINNs.</span>
+
+<span class="sd">Este módulo se encarga de la generación de datos sintéticos (puntos de colocación,</span>
+<span class="sd">condiciones iniciales y de frontera) y de la carga de datos experimentales externos.</span>
+<span class="sd">Actúa como una fábrica de datos que alimenta el proceso de entrenamiento.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+
+<div class="viewcode-block" id="DataManager">
+<a class="viewcode-back" href="../../pinno.html#pinno.data_manage.DataManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gestor centralizado de datos para el entrenamiento de PINNs.</span>
+
+<span class="sd">    Esta clase implementa el patrón Factory para seleccionar la estrategia de muestreo</span>
+<span class="sd">    adecuada según el problema físico (SHO, HEAT, etc.) y gestiona la inyección</span>
+<span class="sd">    de datos externos si se proporcionan.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        config (Dict[str, Any]): Configuración completa del experimento.</span>
+<span class="sd">        problem_name (str): Identificador del problema (&quot;SHO&quot;, &quot;HEAT&quot;, etc.).</span>
+<span class="sd">        physics_config (dict): Configuración específica de la física (dominios, constantes).</span>
+<span class="sd">        data_config (dict): Configuración de cantidad de puntos a muestrear.</span>
+<span class="sd">        external_data (Optional[pd.DataFrame]): DataFrame con datos cargados externamente.</span>
+<span class="sd">        training_data (Dict[str, tf.Tensor]): Diccionario final con los tensores listos para entrenar.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inicializa el DataManager.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (Dict[str, Any]): Diccionario de configuración global.</span>
+<span class="sd">            problem_name (str): Nombre del problema a resolver.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">problem_name</span> <span class="o">=</span> <span class="n">problem_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">physics_config</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;PHYSICS_CONFIG&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_config</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;DATA_CONFIG&quot;</span><span class="p">]</span>
+        
+        <span class="c1"># Mapeo de estrategias de muestreo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampling_strategies</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;SHO&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_sho_data</span><span class="p">,</span>
+            <span class="s2">&quot;DHO&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_sho_data</span><span class="p">,</span>
+            <span class="s2">&quot;HEAT&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_heat_data</span>
+        <span class="p">}</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">external_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="DataManager.load_external_data">
+<a class="viewcode-back" href="../../pinno.html#pinno.data_manage.DataManager.load_external_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_external_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Carga datos experimentales desde un archivo CSV o XLSX.</span>
+
+<span class="sd">        Este método lee el archivo, lo almacena en `self.external_data` y prepara</span>
+<span class="sd">        el gestor para inyectar estos datos en el conjunto de entrenamiento.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filepath (str): Ruta relativa o absoluta al archivo de datos.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True si la carga fue exitosa, False si ocurrió un error.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Si el formato del archivo no es .csv o .xlsx.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">filepath</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">external_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">filepath</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.xlsx&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">external_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Formato no soportado. Use .csv o .xlsx&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error cargando datos: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="DataManager.prepare_data">
+<a class="viewcode-back" href="../../pinno.html#pinno.data_manage.DataManager.prepare_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Orquesta la preparación de todos los datos necesarios.</span>
+
+<span class="sd">        1. Ejecuta la estrategia de muestreo sintético (colocación/frontera).</span>
+<span class="sd">        2. Si existen datos externos cargados, los procesa e inyecta.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Si el `problem_name` no tiene una estrategia asociada.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sampling_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_strategies</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sampling_fn</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Problema no soportado: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">problem_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_data</span> <span class="o">=</span> <span class="n">sampling_fn</span><span class="p">()</span>
+        
+        <span class="c1"># Inyectar datos externos si existen</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">external_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_inject_external_data</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_inject_external_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convierte y mapea el DataFrame externo a tensores de TensorFlow.</span>
+
+<span class="sd">        Identifica las columnas del archivo (ej. &#39;t&#39;, &#39;x&#39; para SHO o &#39;x&#39;,&#39;y&#39;,&#39;t&#39;,&#39;u&#39; para HEAT)</span>
+<span class="sd">        y agrega los tensores resultantes al diccionario `self.training_data` bajo</span>
+<span class="sd">        las claves &quot;ext_...&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">external_data</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;SHO&quot;</span><span class="p">,</span> <span class="s2">&quot;DHO&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="s1">&#39;t&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="ow">and</span> <span class="s1">&#39;x&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="n">t_ext</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                    <span class="n">x_ext</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">training_data</span><span class="p">[</span><span class="s2">&quot;ext_t&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_ext</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">training_data</span><span class="p">[</span><span class="s2">&quot;ext_x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_ext</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Datos externos (t, x) inyectados exitosamente.&quot;</span><span class="p">)</span>
+            
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem_name</span> <span class="o">==</span> <span class="s2">&quot;HEAT&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">]):</span>
+                    <span class="n">xyt_ext</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                    <span class="n">u_ext</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;u&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">training_data</span><span class="p">[</span><span class="s2">&quot;ext_xyt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">xyt_ext</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">training_data</span><span class="p">[</span><span class="s2">&quot;ext_u&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">u_ext</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Datos externos (x,y,t -&gt; u) inyectados exitosamente.&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Advertencia: No se pudieron inyectar datos externos: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DataManager.get_training_data">
+<a class="viewcode-back" href="../../pinno.html#pinno.data_manage.DataManager.get_training_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_training_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Devuelve los datos listos para el entrenamiento.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, tf.Tensor]: Diccionario conteniendo tensores de colocación,</span>
+<span class="sd">            condiciones iniciales, de frontera y datos externos (si aplican).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_data</span></div>
+
+
+    <span class="c1"># --- Estrategias de Muestreo ---</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sample_sho_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Genera datos para Osciladores Armónicos (1D tiempo).&quot;&quot;&quot;</span>
+        <span class="n">t_domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics_config</span><span class="p">[</span><span class="s2">&quot;t_domain&quot;</span><span class="p">]</span>
+        <span class="n">n_coll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_config</span><span class="p">[</span><span class="s2">&quot;n_collocation&quot;</span><span class="p">]</span>
+        
+        <span class="n">t_coll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_uniform</span><span class="p">(</span><span class="n">t_domain</span><span class="p">,</span> <span class="n">n_coll</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_initial_time</span><span class="p">(</span><span class="n">t_domain</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        
+        <span class="n">x0_true</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">physics_config</span><span class="p">[</span><span class="s2">&quot;initial_conditions&quot;</span><span class="p">][</span><span class="s2">&quot;x0&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">v0_true</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">physics_config</span><span class="p">[</span><span class="s2">&quot;initial_conditions&quot;</span><span class="p">][</span><span class="s2">&quot;v0&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;t_coll&quot;</span><span class="p">:</span> <span class="n">t_coll</span><span class="p">,</span> 
+            <span class="s2">&quot;t0&quot;</span><span class="p">:</span> <span class="n">t0</span><span class="p">,</span> 
+            <span class="s2">&quot;x0_true&quot;</span><span class="p">:</span> <span class="n">x0_true</span><span class="p">,</span> 
+            <span class="s2">&quot;v0_true&quot;</span><span class="p">:</span> <span class="n">v0_true</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sample_heat_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Genera datos para la Ecuación de Calor 2D (x, y, t).&quot;&quot;&quot;</span>
+        <span class="n">x_domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics_config</span><span class="p">[</span><span class="s2">&quot;x_domain&quot;</span><span class="p">]</span>
+        <span class="n">y_domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics_config</span><span class="p">[</span><span class="s2">&quot;y_domain&quot;</span><span class="p">]</span>
+        <span class="n">t_domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics_config</span><span class="p">[</span><span class="s2">&quot;t_domain&quot;</span><span class="p">]</span>
+        
+        <span class="n">n_coll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_config</span><span class="p">[</span><span class="s2">&quot;n_collocation&quot;</span><span class="p">]</span>
+        <span class="n">n_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_config</span><span class="p">[</span><span class="s2">&quot;n_initial&quot;</span><span class="p">]</span>
+        <span class="n">n_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_config</span><span class="p">[</span><span class="s2">&quot;n_boundary&quot;</span><span class="p">]</span>
+        
+        <span class="n">xyt_coll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_3d_uniform</span><span class="p">(</span><span class="n">x_domain</span><span class="p">,</span> <span class="n">y_domain</span><span class="p">,</span> <span class="n">t_domain</span><span class="p">,</span> <span class="n">n_coll</span><span class="p">)</span>
+        <span class="n">xyt0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_initial_condition_heat</span><span class="p">(</span><span class="n">x_domain</span><span class="p">,</span> <span class="n">y_domain</span><span class="p">,</span> <span class="n">n_init</span><span class="p">)</span>
+        <span class="n">xyt_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_boundary_condition_heat</span><span class="p">(</span><span class="n">x_domain</span><span class="p">,</span> <span class="n">y_domain</span><span class="p">,</span> <span class="n">t_domain</span><span class="p">,</span> <span class="n">n_bound</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;xyt_coll&quot;</span><span class="p">:</span> <span class="n">xyt_coll</span><span class="p">,</span> 
+            <span class="s2">&quot;xyt0&quot;</span><span class="p">:</span> <span class="n">xyt0</span><span class="p">,</span> 
+            <span class="s2">&quot;xyt_b&quot;</span><span class="p">:</span> <span class="n">xyt_b</span>
+        <span class="p">}</span>
+
+    <span class="c1"># --- Métodos Auxiliares de Muestreo ---</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sample_uniform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">,</span> <span class="n">n_points</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Muestreo uniforme en un dominio simple.&quot;&quot;&quot;</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">domain</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">domain</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_points</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sample_3d_uniform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Muestreo uniforme en un dominio 3D (x, y, t).&quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">dx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dx</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">dy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dy</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">dt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dt</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sample_initial_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crea un tensor para el tiempo inicial t0.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">t0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sample_initial_condition_heat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Muestrea puntos espaciales aleatorios en t=0.&quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">dx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dx</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">dy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dy</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sample_boundary_condition_heat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Muestrea puntos en los bordes del dominio espacial rectangular.</span>
+<span class="sd">        </span>
+<span class="sd">        Distribuye aleatoriamente puntos en x=0, x=L, y=0, y=L a lo largo del tiempo.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Implementación simplificada para muestreo aleatorio de bordes</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">dx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dx</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">dy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dy</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">dt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dt</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        
+        <span class="c1"># Forzar aleatoriamente a bordes</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="c1"># Borde x=min</span>
+        <span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="o">==</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Borde x=max</span>
+        <span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="o">==</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># Borde y=min</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="o">==</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">dy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Borde y=max</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="o">==</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">dy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Universidad Distrital Francisco José de Caldas.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
