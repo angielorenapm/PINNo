@@ -8,6 +8,8 @@
   <title>pinno.losses &mdash; PINNo Solver 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="../../_static/fonts.css?v=5583d106" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
@@ -39,9 +41,9 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contenido:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">pinno</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -70,6 +72,14 @@
              
   <h1>Source code for pinno.losses</h1><div class="highlight"><pre>
 <span></span><span class="c1"># pinno/losses.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Módulo para cálculo de funciones de pérdida (Loss Functions) en PINNs.</span>
+
+<span class="sd">Este módulo implementa el patrón Strategy para seleccionar la función de coste </span>
+<span class="sd">adecuada según el problema físico. Calcula tanto el residual físico (PDE) </span>
+<span class="sd">como el error respecto a datos observados (si existen).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
@@ -77,7 +87,24 @@
 <div class="viewcode-block" id="LossCalculator">
 <a class="viewcode-back" href="../../pinno.html#pinno.losses.LossCalculator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LossCalculator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculador de pérdidas compuesto para entrenamiento de PINNs.</span>
+<span class="sd">    </span>
+<span class="sd">    Orquesta el cálculo del error total combinando:</span>
+<span class="sd">    - Pérdida de la PDE (Residual físico).</span>
+<span class="sd">    - Pérdida de condiciones iniciales/frontera (Analítico).</span>
+<span class="sd">    - Pérdida de datos observados (Data-Driven).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss_weights</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inicializa el calculador con pesos y el problema activo.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            loss_weights (Dict[str, float]): Pesos para ponderar componentes del error </span>
+<span class="sd">                                             (ej. ``{&quot;ode&quot;: 1.0, &quot;data&quot;: 100.0}``).</span>
+<span class="sd">            problem_name (str): Identificador del problema (&quot;SHO&quot;, &quot;HEAT&quot;).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss_weights</span> <span class="o">=</span> <span class="n">loss_weights</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">problem_name</span> <span class="o">=</span> <span class="n">problem_name</span>
         
@@ -89,13 +116,45 @@
 
 <div class="viewcode-block" id="LossCalculator.compute_losses">
 <a class="viewcode-back" href="../../pinno.html#pinno.losses.LossCalculator.compute_losses">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_losses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">physics</span><span class="p">,</span> <span class="n">training_data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_losses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">physics</span><span class="p">,</span> 
+                      <span class="n">training_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ejecuta el cálculo de pérdida correspondiente al problema configurado.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model (tf.keras.Model): La red neuronal (PINN) a evaluar.</span>
+<span class="sd">            physics: Instancia del problema físico con métodos ``pde_residual``.</span>
+<span class="sd">            training_data (Dict[str, tf.Tensor]): Diccionario con tensores de entrada.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Si el problema configurado no tiene función de pérdida asociada.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[tf.Tensor, List[tf.Tensor]]:</span>
+<span class="sd">                - **Total Loss**: Escalar (suma ponderada) para el optimizador.</span>
+<span class="sd">                - **Components**: Lista de valores individuales de cada pérdida.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">loss_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_functions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">loss_fn</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Problema </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">problem_name</span><span class="si">}</span><span class="s2"> no soportado&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">loss_fn</span><span class="p">:</span> 
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Problema </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">problem_name</span><span class="si">}</span><span class="s2"> no soportado&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">physics</span><span class="p">,</span> <span class="n">training_data</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_sho_losses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">physics</span><span class="p">,</span> <span class="n">training_data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_sho_losses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">physics</span><span class="p">,</span> 
+                           <span class="n">training_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calcula pérdidas para osciladores armónicos (SHO/DHO).</span>
+<span class="sd">        </span>
+<span class="sd">        Detecta automáticamente el modo (Analítico vs CSV) inspeccionando las claves de datos.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model: Red Neuronal.</span>
+<span class="sd">            physics: Objeto físico.</span>
+<span class="sd">            training_data: Datos de entrada.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple: (Loss Total, [Loss PDE, Loss Data/Initial]).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># --- FIX: Deteccion automatica por claves de datos ---</span>
         <span class="c1"># Si &quot;t0&quot; esta en los datos, estamos en modo Analitico. Si no, CSV.</span>
         <span class="k">if</span> <span class="s2">&quot;t0&quot;</span> <span class="ow">in</span> <span class="n">training_data</span><span class="p">:</span>
@@ -124,7 +183,19 @@
                      <span class="bp">self</span><span class="o">.</span><span class="n">loss_weights</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="mf">200.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">loss_data</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">total</span><span class="p">,</span> <span class="p">[</span><span class="n">loss_pde</span><span class="p">,</span> <span class="n">loss_data</span><span class="p">]</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_heat_losses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">physics</span><span class="p">,</span> <span class="n">training_data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_heat_losses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">physics</span><span class="p">,</span> 
+                            <span class="n">training_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calcula pérdidas para la ecuación de calor 2D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model: Red Neuronal.</span>
+<span class="sd">            physics: Objeto físico (HeatEquation2D).</span>
+<span class="sd">            training_data: Datos de entrada (xyt).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple: (Loss Total, [Loss PDE, Loss Init, Loss Bound] o [Loss PDE, Loss Data]).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Mismo fix para HEAT: detectar &#39;xyt0&#39;</span>
         <span class="k">if</span> <span class="s2">&quot;xyt0&quot;</span> <span class="ow">in</span> <span class="n">training_data</span><span class="p">:</span>
             <span class="c1"># Analitico</span>
@@ -156,7 +227,20 @@
             <span class="n">total</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_weights</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pde&quot;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">*</span> <span class="n">loss_pde</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_weights</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="mf">200.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">loss_data</span>
             <span class="k">return</span> <span class="n">total</span><span class="p">,</span> <span class="p">[</span><span class="n">loss_pde</span><span class="p">,</span> <span class="n">loss_data</span><span class="p">]</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_initial_loss_sho</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">x0_true</span><span class="p">,</span> <span class="n">v0_true</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initial_loss_sho</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">t0</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> 
+                         <span class="n">x0_true</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">v0_true</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calcula el error de condición inicial para osciladores (posición y velocidad).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model: Red Neuronal.</span>
+<span class="sd">            t0 (tf.Tensor): Tiempo inicial (0.0).</span>
+<span class="sd">            x0_true (tf.Tensor): Posición inicial verdadera.</span>
+<span class="sd">            v0_true (tf.Tensor): Velocidad inicial verdadera.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tf.Tensor: Suma del error cuadrático de posición y velocidad.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">()</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
             <span class="n">tape</span><span class="o">.</span><span class="n">watch</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
             <span class="n">x0_pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>

@@ -8,6 +8,8 @@
   <title>pinno.training &mdash; PINNo Solver 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="../../_static/fonts.css?v=5583d106" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
@@ -39,9 +41,9 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contenido:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">pinno</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -70,6 +72,14 @@
              
   <h1>Source code for pinno.training</h1><div class="highlight"><pre>
 <span></span><span class="c1"># pinno/training.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Módulo principal de entrenamiento para PINNs.</span>
+
+<span class="sd">Este módulo actúa como el orquestador central (Facade) del sistema. Su responsabilidad</span>
+<span class="sd">es coordinar la interacción entre los modelos neuronales, la física, los datos</span>
+<span class="sd">y el cálculo de pérdidas para ejecutar el bucle de entrenamiento.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
@@ -85,9 +95,25 @@
 <div class="viewcode-block" id="PINNTrainer">
 <a class="viewcode-back" href="../../pinno.html#pinno.training.PINNTrainer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PINNTrainer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Entrenador principal para Redes Neuronales Informadas por la Física.</span>
+
+<span class="sd">    Encapsula todo el estado y la lógica necesaria para entrenar un modelo</span>
+<span class="sd">    desde cero, incluyendo la configuración de experimentos híbridos (Analítico/CSV).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
                  <span class="n">csv_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
                  <span class="n">column_mapping</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inicializa el entrenador y configura el entorno del experimento.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config_dict (Dict[str, Any]): Configuración completa del experimento.</span>
+<span class="sd">            problem_name (str): Nombre del problema físico (&quot;SHO&quot;, &quot;HEAT&quot;).</span>
+<span class="sd">            csv_data (Optional[pd.DataFrame]): Datos externos para modo Data-Driven.</span>
+<span class="sd">            column_mapping (Optional[Dict[str, str]]): Mapeo de columnas CSV.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config_dict</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">active_problem</span> <span class="o">=</span> <span class="n">problem_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span> <span class="o">=</span> <span class="n">csv_data</span>
@@ -103,6 +129,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_setup_experiment</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_init_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inicializa los componentes internos (Modelo, Física, Datos, Pérdidas, Optimizador).</span>
+<span class="sd">        Ajusta automáticamente los pesos de pérdida si se detecta modo CSV.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 1. Modelo</span>
         <span class="n">model_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;MODEL_CONFIG&quot;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;MODEL_NAME&quot;</span><span class="p">],</span> <span class="n">model_config</span><span class="p">)</span>
@@ -133,6 +163,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;LEARNING_RATE&quot;</span><span class="p">])</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_setup_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crea el directorio de resultados y prepara los datos iniciales.&quot;&quot;&quot;</span>
         <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;csv&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_csv</span> <span class="k">else</span> <span class="s2">&quot;analytical&quot;</span>
         <span class="n">ts</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;RESULTS_PATH&quot;</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;RUN_NAME&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">ts</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -145,6 +176,13 @@
 <a class="viewcode-back" href="../../pinno.html#pinno.training.PINNTrainer.train_step">[docs]</a>
     <span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">train_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ejecuta un paso de entrenamiento compilado (Grafo TF).</span>
+<span class="sd">        Calcula gradientes y actualiza los pesos del modelo.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[tf.Tensor]: Lista con [Loss Total, Componente 1, Componente 2, ...].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">()</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
             <span class="n">total</span><span class="p">,</span> <span class="n">components</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_calculator</span><span class="o">.</span><span class="n">compute_losses</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_data</span><span class="p">)</span>
         <span class="n">grads</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">total</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">)</span>
@@ -155,6 +193,13 @@
 <div class="viewcode-block" id="PINNTrainer.perform_one_step">
 <a class="viewcode-back" href="../../pinno.html#pinno.training.PINNTrainer.perform_one_step">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">perform_one_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Interfaz de alto nivel para ejecutar una época.</span>
+<span class="sd">        Actualiza contadores y el historial de pérdidas.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[tf.Tensor]: Valores de pérdida de la época actual.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">losses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_step</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">losses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
@@ -164,6 +209,12 @@
 <div class="viewcode-block" id="PINNTrainer.get_training_info">
 <a class="viewcode-back" href="../../pinno.html#pinno.training.PINNTrainer.get_training_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_training_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene un resumen del estado actual del entrenamiento.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, Any]: Diccionario con época, pérdida actual y problema activo.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;epoch&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="p">,</span>
             <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_history</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>

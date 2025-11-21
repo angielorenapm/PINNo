@@ -1,0 +1,614 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; PINNo Solver 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="_static/fonts.css?v=5583d106" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Bienvenido a la documentación de PINNo Solver" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PINNo Solver
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-pinno.training">Training &amp; Orchestration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pinno.training.PINNTrainer"><code class="docutils literal notranslate"><span class="pre">PINNTrainer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.training.PINNTrainer.get_training_info"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.get_training_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.training.PINNTrainer.perform_one_step"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.perform_one_step()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.training.PINNTrainer.train_step"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.train_step()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pinno.physics">Physics Core</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pinno.physics.DampedHarmonicOscillator"><code class="docutils literal notranslate"><span class="pre">DampedHarmonicOscillator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.DampedHarmonicOscillator.analytical_solution"><code class="docutils literal notranslate"><span class="pre">DampedHarmonicOscillator.analytical_solution()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.DampedHarmonicOscillator.pde_residual"><code class="docutils literal notranslate"><span class="pre">DampedHarmonicOscillator.pde_residual()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pinno.physics.HeatEquation2D"><code class="docutils literal notranslate"><span class="pre">HeatEquation2D</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.HeatEquation2D.analytical_solution"><code class="docutils literal notranslate"><span class="pre">HeatEquation2D.analytical_solution()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.HeatEquation2D.pde_residual"><code class="docutils literal notranslate"><span class="pre">HeatEquation2D.pde_residual()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pinno.physics.PhysicsProblem"><code class="docutils literal notranslate"><span class="pre">PhysicsProblem</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.PhysicsProblem.analytical_solution"><code class="docutils literal notranslate"><span class="pre">PhysicsProblem.analytical_solution()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.PhysicsProblem.get_training_data"><code class="docutils literal notranslate"><span class="pre">PhysicsProblem.get_training_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.PhysicsProblem.pde_residual"><code class="docutils literal notranslate"><span class="pre">PhysicsProblem.pde_residual()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.PhysicsProblem.set_csv_data"><code class="docutils literal notranslate"><span class="pre">PhysicsProblem.set_csv_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pinno.physics.SimpleHarmonicOscillator"><code class="docutils literal notranslate"><span class="pre">SimpleHarmonicOscillator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.SimpleHarmonicOscillator.analytical_solution"><code class="docutils literal notranslate"><span class="pre">SimpleHarmonicOscillator.analytical_solution()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.SimpleHarmonicOscillator.pde_residual"><code class="docutils literal notranslate"><span class="pre">SimpleHarmonicOscillator.pde_residual()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pinno.physics.get_physics_problem"><code class="docutils literal notranslate"><span class="pre">get_physics_problem()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pinno.losses.LossCalculator"><code class="docutils literal notranslate"><span class="pre">LossCalculator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.losses.LossCalculator.compute_losses"><code class="docutils literal notranslate"><span class="pre">LossCalculator.compute_losses()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pinno.models">Neural Networks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pinno.models.PINN_MLP"><code class="docutils literal notranslate"><span class="pre">PINN_MLP</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.models.PINN_MLP.call"><code class="docutils literal notranslate"><span class="pre">PINN_MLP.call()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pinno.models.get_model"><code class="docutils literal notranslate"><span class="pre">get_model()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pinno.data_manage">Data Management</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pinno.data_manage.DataManager"><code class="docutils literal notranslate"><span class="pre">DataManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.data_manage.DataManager.get_training_data"><code class="docutils literal notranslate"><span class="pre">DataManager.get_training_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.data_manage.DataManager.prepare_data"><code class="docutils literal notranslate"><span class="pre">DataManager.prepare_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pinno.config">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pinno.config.get_active_config"><code class="docutils literal notranslate"><span class="pre">get_active_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pinno.config.get_problem_variables"><code class="docutils literal notranslate"><span class="pre">get_problem_variables()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PINNo Solver</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api_reference.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
+<p>Documentación técnica de los módulos del núcleo de PINNo.</p>
+<section id="module-pinno.training">
+<span id="training-orchestration"></span><h2>Training &amp; Orchestration<a class="headerlink" href="#module-pinno.training" title="Link to this heading"></a></h2>
+<p>Módulo principal de entrenamiento para PINNs.</p>
+<p>Este módulo actúa como el orquestador central (Facade) del sistema. Su responsabilidad
+es coordinar la interacción entre los modelos neuronales, la física, los datos
+y el cálculo de pérdidas para ejecutar el bucle de entrenamiento.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.training.PINNTrainer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.training.</span></span><span class="sig-name descname"><span class="pre">PINNTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csv_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/training.html#PINNTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.training.PINNTrainer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Entrenador principal para Redes Neuronales Informadas por la Física.</p>
+<p>Encapsula todo el estado y la lógica necesaria para entrenar un modelo
+desde cero, incluyendo la configuración de experimentos híbridos (Analítico/CSV).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.training.PINNTrainer.get_training_info">
+<span class="sig-name descname"><span class="pre">get_training_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pinno/training.html#PINNTrainer.get_training_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.training.PINNTrainer.get_training_info" title="Link to this definition"></a></dt>
+<dd><p>Obtiene un resumen del estado actual del entrenamiento.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Diccionario con época, pérdida actual y problema activo.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.training.PINNTrainer.perform_one_step">
+<span class="sig-name descname"><span class="pre">perform_one_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pinno/training.html#PINNTrainer.perform_one_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.training.PINNTrainer.perform_one_step" title="Link to this definition"></a></dt>
+<dd><p>Interfaz de alto nivel para ejecutar una época.
+Actualiza contadores y el historial de pérdidas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Valores de pérdida de la época actual.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[tf.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.training.PINNTrainer.train_step">
+<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pinno/training.html#PINNTrainer.train_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.training.PINNTrainer.train_step" title="Link to this definition"></a></dt>
+<dd><p>Ejecuta un paso de entrenamiento compilado (Grafo TF).
+Calcula gradientes y actualiza los pesos del modelo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Lista con [Loss Total, Componente 1, Componente 2, …].</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[tf.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pinno.physics">
+<span id="physics-core"></span><h2>Physics Core<a class="headerlink" href="#module-pinno.physics" title="Link to this heading"></a></h2>
+<p>Módulo que define los problemas físicos y sus ecuaciones diferenciales.</p>
+<p>Este módulo contiene la lógica central de la “Física” en las PINNs. Define las clases
+que encapsulan las Ecuaciones Diferenciales (ODEs y PDEs), calcula los residuos
+utilizando diferenciación automática y proporciona soluciones analíticas para
+validación.</p>
+<dl class="simple">
+<dt>Classes:</dt><dd><p>PhysicsProblem: Clase base abstracta.
+SimpleHarmonicOscillator: Implementación del oscilador armónico (Masa-Resorte).
+DampedHarmonicOscillator: Implementación del oscilador amortiguado.
+HeatEquation2D: Implementación de la ecuación de calor en 2D.</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.physics.DampedHarmonicOscillator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.physics.</span></span><span class="sig-name descname"><span class="pre">DampedHarmonicOscillator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/physics.html#DampedHarmonicOscillator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.DampedHarmonicOscillator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="pinno.html#pinno.physics.SimpleHarmonicOscillator" title="pinno.physics.SimpleHarmonicOscillator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleHarmonicOscillator</span></code></a></p>
+<p>Implementación del Oscilador Armónico Amortiguado (DHO).
+Ec: x’’ + 2*zeta*w*x’ + w^2*x = 0</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.DampedHarmonicOscillator.analytical_solution">
+<span class="sig-name descname"><span class="pre">analytical_solution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#DampedHarmonicOscillator.analytical_solution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.DampedHarmonicOscillator.analytical_solution" title="Link to this definition"></a></dt>
+<dd><p>Solución analítica para casos subamortiguados, críticamente amortiguados y sobreamortiguados.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.DampedHarmonicOscillator.pde_residual">
+<span class="sig-name descname"><span class="pre">pde_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#DampedHarmonicOscillator.pde_residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.DampedHarmonicOscillator.pde_residual" title="Link to this definition"></a></dt>
+<dd><p>Calcula el residuo de la ODE amortiguada.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.physics.HeatEquation2D">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.physics.</span></span><span class="sig-name descname"><span class="pre">HeatEquation2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/physics.html#HeatEquation2D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.HeatEquation2D" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="pinno.html#pinno.physics.PhysicsProblem" title="pinno.physics.PhysicsProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhysicsProblem</span></code></a></p>
+<p>Implementación de la Ecuación de Calor 2D dependiente del tiempo.
+Ec: u_t - alpha * (u_xx + u_yy) = 0</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.HeatEquation2D.analytical_solution">
+<span class="sig-name descname"><span class="pre">analytical_solution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyt</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#HeatEquation2D.analytical_solution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.HeatEquation2D.analytical_solution" title="Link to this definition"></a></dt>
+<dd><p>Solución analítica para una placa cuadrada con condiciones específicas.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.HeatEquation2D.pde_residual">
+<span class="sig-name descname"><span class="pre">pde_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#HeatEquation2D.pde_residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.HeatEquation2D.pde_residual" title="Link to this definition"></a></dt>
+<dd><p>Calcula el residuo de la PDE de calor usando derivadas automáticas.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.physics.PhysicsProblem">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.physics.</span></span><span class="sig-name descname"><span class="pre">PhysicsProblem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/physics.html#PhysicsProblem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.PhysicsProblem" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Clase base abstracta para la definición de problemas físicos.</p>
+<p>Provee la interfaz común para calcular residuos de ecuaciones diferenciales
+y soluciones analíticas, así como la gestión de datos externos (CSV).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.PhysicsProblem.analytical_solution">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">analytical_solution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#PhysicsProblem.analytical_solution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.PhysicsProblem.analytical_solution" title="Link to this definition"></a></dt>
+<dd><p>Calcula la solución analítica exacta en los puntos dados.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>points</strong> (<em>tf.Tensor</em>) – Puntos de evaluación.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Solución exacta.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.PhysicsProblem.get_training_data">
+<span class="sig-name descname"><span class="pre">get_training_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#PhysicsProblem.get_training_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.PhysicsProblem.get_training_data" title="Link to this definition"></a></dt>
+<dd><p>Obtiene los datos de entrenamiento extraídos del CSV según el mapeo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tupla con tensores de datos (ej. t, x) o None si no hay datos.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optional[Tuple]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.PhysicsProblem.pde_residual">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pde_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/physics.html#PhysicsProblem.pde_residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.PhysicsProblem.pde_residual" title="Link to this definition"></a></dt>
+<dd><p>Calcula el residuo de la ecuación diferencial (PDE/ODE).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>tf.keras.Model</em>) – Modelo de red neuronal.</p></li>
+<li><p><strong>points</strong> (<em>tf.Tensor</em>) – Puntos de colocación para evaluar la ecuación.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>El residuo calculado (debe tender a 0).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.PhysicsProblem.set_csv_data">
+<span class="sig-name descname"><span class="pre">set_csv_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/physics.html#PhysicsProblem.set_csv_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.PhysicsProblem.set_csv_data" title="Link to this definition"></a></dt>
+<dd><p>Configura datos CSV para entrenamiento guiado por datos (Data-Driven).
+Desactiva la bandera <code class="docutils literal notranslate"><span class="pre">has_analytical</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>csv_data</strong> (<em>pd.DataFrame</em>) – DataFrame con datos experimentales.</p></li>
+<li><p><strong>column_mapping</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em>) – Mapeo de variables físicas a columnas del CSV.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.physics.SimpleHarmonicOscillator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.physics.</span></span><span class="sig-name descname"><span class="pre">SimpleHarmonicOscillator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/physics.html#SimpleHarmonicOscillator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.SimpleHarmonicOscillator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="pinno.html#pinno.physics.PhysicsProblem" title="pinno.physics.PhysicsProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhysicsProblem</span></code></a></p>
+<p>Implementación del Oscilador Armónico Simple (SHO).
+Ec: x’’ + w^2 * x = 0</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.SimpleHarmonicOscillator.analytical_solution">
+<span class="sig-name descname"><span class="pre">analytical_solution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#SimpleHarmonicOscillator.analytical_solution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.SimpleHarmonicOscillator.analytical_solution" title="Link to this definition"></a></dt>
+<dd><p>Solución analítica: x(t) = x0*cos(wt) + (v0/w)*sin(wt).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.SimpleHarmonicOscillator.pde_residual">
+<span class="sig-name descname"><span class="pre">pde_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#SimpleHarmonicOscillator.pde_residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.SimpleHarmonicOscillator.pde_residual" title="Link to this definition"></a></dt>
+<dd><p>Calcula el residuo de la ODE para el SHO.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – Red neuronal.</p></li>
+<li><p><strong>t</strong> (<em>tf.Tensor</em>) – Tiempo.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>x’’ + w^2*x</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pinno.physics.get_physics_problem">
+<span class="sig-prename descclassname"><span class="pre">pinno.physics.</span></span><span class="sig-name descname"><span class="pre">get_physics_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csv_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pinno.html#pinno.physics.PhysicsProblem" title="pinno.physics.PhysicsProblem"><span class="pre">PhysicsProblem</span></a></span></span><a class="reference internal" href="_modules/pinno/physics.html#get_physics_problem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.get_physics_problem" title="Link to this definition"></a></dt>
+<dd><p>Fábrica que instancia un problema físico.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem_name</strong> (<em>str</em>) – Nombre del problema (“SHO”, “HEAT”).</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Configuración global.</p></li>
+<li><p><strong>csv_data</strong> (<em>Optional</em><em>[</em><em>pd.DataFrame</em><em>]</em>) – Datos externos.</p></li>
+<li><p><strong>column_mapping</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Mapeo de columnas.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Instancia configurada del problema.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pinno.html#pinno.physics.PhysicsProblem" title="pinno.physics.PhysicsProblem">PhysicsProblem</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-pinno.losses">Módulo para cálculo de funciones de pérdida (Loss Functions) en PINNs.</p>
+<p>Este módulo implementa el patrón Strategy para seleccionar la función de coste
+adecuada según el problema físico. Calcula tanto el residual físico (PDE)
+como el error respecto a datos observados (si existen).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.losses.LossCalculator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.losses.</span></span><span class="sig-name descname"><span class="pre">LossCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss_weights</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/losses.html#LossCalculator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.losses.LossCalculator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Calculador de pérdidas compuesto para entrenamiento de PINNs.</p>
+<p>Orquesta el cálculo del error total combinando:
+- Pérdida de la PDE (Residual físico).
+- Pérdida de condiciones iniciales/frontera (Analítico).
+- Pérdida de datos observados (Data-Driven).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.losses.LossCalculator.compute_losses">
+<span class="sig-name descname"><span class="pre">compute_losses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">physics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pinno/losses.html#LossCalculator.compute_losses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.losses.LossCalculator.compute_losses" title="Link to this definition"></a></dt>
+<dd><p>Ejecuta el cálculo de pérdida correspondiente al problema configurado.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>tf.keras.Model</em>) – La red neuronal (PINN) a evaluar.</p></li>
+<li><p><strong>physics</strong> – Instancia del problema físico con métodos <code class="docutils literal notranslate"><span class="pre">pde_residual</span></code>.</p></li>
+<li><p><strong>training_data</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>tf.Tensor</em><em>]</em>) – Diccionario con tensores de entrada.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Si el problema configurado no tiene función de pérdida asociada.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>Total Loss</strong>: Escalar (suma ponderada) para el optimizador.</p></li>
+<li><p><strong>Components</strong>: Lista de valores individuales de cada pérdida.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple[tf.Tensor, List[tf.Tensor]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pinno.models">
+<span id="neural-networks"></span><h2>Neural Networks<a class="headerlink" href="#module-pinno.models" title="Link to this heading"></a></h2>
+<p>Módulo para la definición de arquitecturas de redes neuronales usando TensorFlow/Keras.</p>
+<p>Este script actúa como una fábrica de modelos, conteniendo las clases que definen
+la topología de las redes neuronales (ej. Perceptrón Multicapa) utilizadas para
+aproximar la solución de las ecuaciones diferenciales.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.models.PINN_MLP">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.models.</span></span><span class="sig-name descname"><span class="pre">PINN_MLP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/models.html#PINN_MLP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.models.PINN_MLP" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Red Neuronal Densa de Múltiples Capas (MLP) para una PINN.</p>
+<p>Implementa una arquitectura ‘Feed-Forward’ estándar. Es la arquitectura base
+más común para resolver ecuaciones diferenciales simples.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.models.PINN_MLP.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/models.html#PINN_MLP.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.models.PINN_MLP.call" title="Link to this definition"></a></dt>
+<dd><p>Realiza el paso hacia adelante (Forward Pass).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>tf.Tensor</em>) – Tensor de entrada.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor de salida con la predicción de la red.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pinno.models.get_model">
+<span class="sig-prename descclassname"><span class="pre">pinno.models.</span></span><span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="reference internal" href="_modules/pinno/models.html#get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.models.get_model" title="Link to this definition"></a></dt>
+<dd><p>Fábrica que instancia un modelo a partir de su nombre y configuración.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<em>str</em>) – Identificador del modelo (ej. “mlp”).</p></li>
+<li><p><strong>model_config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Diccionario de hiperparámetros para el constructor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Si el nombre del modelo no está registrado.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Instancia compilada del modelo solicitado.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tf.keras.Model</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pinno.data_manage">
+<span id="data-management"></span><h2>Data Management<a class="headerlink" href="#module-pinno.data_manage" title="Link to this heading"></a></h2>
+<p>Módulo para gestión y muestreo de datos en PINNs.</p>
+<p>Este módulo se encarga de la generación de datos sintéticos (puntos de colocación,
+condiciones iniciales y de frontera) y de la carga de datos experimentales externos.
+Actúa como una fábrica de datos que alimenta el proceso de entrenamiento.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.data_manage.DataManager">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.data_manage.</span></span><span class="sig-name descname"><span class="pre">DataManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csv_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/data_manage.html#DataManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.data_manage.DataManager" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Gestor centralizado para la generación de datos de entrenamiento (sintéticos y experimentales).</p>
+<p>Selecciona y ejecuta estrategias de muestreo dependiendo del problema físico y
+de si se proporcionan datos externos (CSV).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.data_manage.DataManager.get_training_data">
+<span class="sig-name descname"><span class="pre">get_training_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pinno/data_manage.html#DataManager.get_training_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.data_manage.DataManager.get_training_data" title="Link to this definition"></a></dt>
+<dd><p>Devuelve el conjunto de datos procesado y listo para el entrenamiento.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Diccionario con los tensores de entrenamiento
+(ej. <code class="docutils literal notranslate"><span class="pre">t_coll</span></code>, <code class="docutils literal notranslate"><span class="pre">x0_true</span></code>, <code class="docutils literal notranslate"><span class="pre">t_data</span></code>).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict[str, tf.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.data_manage.DataManager.prepare_data">
+<span class="sig-name descname"><span class="pre">prepare_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/data_manage.html#DataManager.prepare_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.data_manage.DataManager.prepare_data" title="Link to this definition"></a></dt>
+<dd><p>Ejecuta la estrategia de muestreo correspondiente para generar los tensores de entrenamiento.</p>
+<p>Selecciona entre estrategia CSV o Analítica basándose en la inicialización.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – Si el <cite>problem_name</cite> no tiene una estrategia de muestreo definida.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pinno.config">
+<span id="configuration"></span><h2>Configuration<a class="headerlink" href="#module-pinno.config" title="Link to this heading"></a></h2>
+<p>Módulo de Configuración Central para el Solucionador de PINNs.</p>
+<p>Este módulo contiene las configuraciones por defecto para los diferentes problemas físicos,
+así como funciones de utilidad para recuperar estas configuraciones de manera segura.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="pinno.config.get_active_config">
+<span class="sig-prename descclassname"><span class="pre">pinno.config.</span></span><span class="sig-name descname"><span class="pre">get_active_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/pinno/config.html#get_active_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.config.get_active_config" title="Link to this definition"></a></dt>
+<dd><p>Recupera y aísla una copia profunda del diccionario de configuración para un problema
+físico específico, evitando modificaciones accidentales en la configuración global.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>problem_name</strong> (<em>str</em>) – Identificador del problema (ej. “SHO”, “DHO”, “HEAT”).
+Insensible a mayúsculas.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Se lanza si el <cite>problem_name</cite> no existe en el registro <cite>ALL_CONFIGS</cite>.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Una copia independiente (deepcopy) conteniendo la configuración del modelo,</dt><dd><p>física y entrenamiento.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pinno.config.get_problem_variables">
+<span class="sig-prename descclassname"><span class="pre">pinno.config.</span></span><span class="sig-name descname"><span class="pre">get_problem_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/pinno/config.html#get_problem_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.config.get_problem_variables" title="Link to this definition"></a></dt>
+<dd><p>Obtiene la lista de nombres de variables físicas requeridas para realizar el mapeo
+de columnas cuando se cargan datos CSV externos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>problem_name</strong> (<em>str</em>) – Identificador del problema (ej. “SHO”). Insensible a mayúsculas.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Lista de cadenas con los nombres de las variables esperadas</dt><dd><p>(ej. <code class="docutils literal notranslate"><span class="pre">[&quot;time&quot;,</span> <span class="pre">&quot;displacement&quot;]</span></code>). Devuelve lista vacía si no se encuentra.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Bienvenido a la documentación de PINNo Solver" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Universidad Distrital Francisco José de Caldas.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
