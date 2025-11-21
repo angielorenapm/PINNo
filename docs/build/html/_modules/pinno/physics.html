@@ -8,6 +8,8 @@
   <title>pinno.physics &mdash; PINNo Solver 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="../../_static/fonts.css?v=5583d106" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
@@ -39,9 +41,9 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contenido:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">pinno</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -69,7 +71,8 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pinno.physics</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="c1"># pinno/physics.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Módulo que define los problemas físicos y sus ecuaciones diferenciales.</span>
 
 <span class="sd">Este módulo contiene la lógica central de la &quot;Física&quot; en las PINNs. Define las clases</span>
@@ -86,54 +89,47 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
-<span class="c1"># ==============================================================================</span>
-<span class="c1"># --- CLASE BASE ---</span>
-<span class="c1"># ==============================================================================</span>
-
+<span class="c1"># --- Clase Base Abstracta ---</span>
 <div class="viewcode-block" id="PhysicsProblem">
 <a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PhysicsProblem</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Clase base abstracta para todos los problemas físicos.</span>
-
-<span class="sd">    Define la interfaz que deben implementar los problemas específicos para ser</span>
-<span class="sd">    compatibles con el entrenador (PINNTrainer).</span>
-
-<span class="sd">    Attributes:</span>
-<span class="sd">        config (Dict[str, Any]): Configuración global del experimento.</span>
-<span class="sd">        domain_config (dict): Sub-sección &#39;PHYSICS_CONFIG&#39; con parámetros específicos</span>
-<span class="sd">                              (ej. omega, zeta, alpha, dominios).</span>
+<span class="sd">    Clase base abstracta para la definición de problemas físicos.</span>
+<span class="sd">    </span>
+<span class="sd">    Provee la interfaz común para calcular residuos de ecuaciones diferenciales</span>
+<span class="sd">    y soluciones analíticas, así como la gestión de datos externos (CSV).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Inicializa el problema físico.</span>
+<span class="sd">        Inicializa el problema físico con la configuración dada.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            config (Dict[str, Any]): Configuración completa proveniente de `config.py`.</span>
+<span class="sd">            config (Dict[str, Any]): Diccionario de configuración global.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;PHYSICS_CONFIG&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_analytical</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="PhysicsProblem.pde_residual">
 <a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem.pde_residual">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">pde_residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pde_residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calcula el residual de la ecuación diferencial en los puntos dados.</span>
-
-<span class="sd">        El residual es la diferencia entre el lado izquierdo y derecho de la ecuación.</span>
-<span class="sd">        Si la red neuronal respeta la física, este valor debe ser cercano a 0.</span>
+<span class="sd">        Calcula el residuo de la ecuación diferencial (PDE/ODE).</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            model (tf.keras.Model): La red neuronal que aproxima la solución.</span>
-<span class="sd">            points (tf.Tensor): Puntos de colocación (inputs) donde evaluar la ecuación.</span>
+<span class="sd">            model (tf.keras.Model): Modelo de red neuronal.</span>
+<span class="sd">            points (tf.Tensor): Puntos de colocación para evaluar la ecuación.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tf.Tensor: Tensor con los valores del residual para cada punto.</span>
+<span class="sd">            tf.Tensor: El residuo calculado (debe tender a 0).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
@@ -141,37 +137,68 @@
 <div class="viewcode-block" id="PhysicsProblem.analytical_solution">
 <a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem.analytical_solution">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">analytical_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">analytical_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calcula la solución exacta (analítica) del problema.</span>
-
-<span class="sd">        Se utiliza para calcular el error real y generar gráficas comparativas.</span>
+<span class="sd">        Calcula la solución analítica exacta en los puntos dados.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            points (Union[np.ndarray, tf.Tensor]): Puntos donde evaluar la solución.</span>
+<span class="sd">            points (tf.Tensor): Puntos de evaluación.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: Valores exactos de la solución.</span>
+<span class="sd">            tf.Tensor: Solución exacta.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
-</div>
+
+    
+<div class="viewcode-block" id="PhysicsProblem.set_csv_data">
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem.set_csv_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_csv_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csv_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">column_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Configura datos CSV para entrenamiento guiado por datos (Data-Driven).</span>
+<span class="sd">        Desactiva la bandera ``has_analytical``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            csv_data (pd.DataFrame): DataFrame con datos experimentales.</span>
+<span class="sd">            column_mapping (Dict[str, str]): Mapeo de variables físicas a columnas del CSV.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span> <span class="o">=</span> <span class="n">csv_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span> <span class="o">=</span> <span class="n">column_mapping</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_analytical</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+    
+<div class="viewcode-block" id="PhysicsProblem.get_training_data">
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem.get_training_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_training_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Obtiene los datos de entrenamiento extraídos del CSV según el mapeo.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[Tuple]: Tupla con tensores de datos (ej. t, x) o None si no hay datos.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_data_with_mapping</span><span class="p">()</span></div>
 
 
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_data_with_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Método interno para extraer columnas específicas del CSV.</span>
+<span class="sd">        Debe ser implementado por cada subclase.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
 
-<span class="c1"># ==============================================================================</span>
-<span class="c1"># --- IMPLEMENTACIONES ESPECÍFICAS ---</span>
-<span class="c1"># ==============================================================================</span>
+
+<span class="c1"># --- Implementaciones ---</span>
 
 <div class="viewcode-block" id="SimpleHarmonicOscillator">
 <a class="viewcode-back" href="../../pinno.html#pinno.physics.SimpleHarmonicOscillator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimpleHarmonicOscillator</span><span class="p">(</span><span class="n">PhysicsProblem</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Oscilador Armónico Simple (SHO).</span>
-
-<span class="sd">    Resuelve la Ecuación Diferencial Ordinaria (ODE) de segundo orden:</span>
-<span class="sd">        x&#39;&#39;(t) + omega^2 * x(t) = 0</span>
+<span class="sd">    Implementación del Oscilador Armónico Simple (SHO).</span>
+<span class="sd">    Ec: x&#39;&#39; + w^2 * x = 0</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
+    
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">omega</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;omega&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -180,59 +207,14 @@
 <a class="viewcode-back" href="../../pinno.html#pinno.physics.SimpleHarmonicOscillator.pde_residual">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">pde_residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calcula el residual para SHO: R = x_tt + omega^2 * x.</span>
+<span class="sd">        Calcula el residuo de la ODE para el SHO.</span>
 <span class="sd">        </span>
-<span class="sd">        Usa `tf.GradientTape` anidado/persistente para calcular derivadas de segundo orden.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">(</span><span class="n">persistent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
-            <span class="n">tape</span><span class="o">.</span><span class="n">watch</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-            <span class="n">x_t</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="c1"># Primera derivada (velocidad)</span>
-            
-        <span class="n">x_tt</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">x_t</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>  <span class="c1"># Segunda derivada (aceleración)</span>
-        <span class="k">del</span> <span class="n">tape</span>
-        
-        <span class="k">if</span> <span class="n">x_tt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;El cálculo de la segunda derivada (x_tt) falló. &quot;</span>
-                             <span class="s2">&quot;Verifique que la función de activación sea diferenciable.&quot;</span><span class="p">)</span>
-                             
-        <span class="k">return</span> <span class="n">x_tt</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">omega</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span></div>
+<span class="sd">        Args:</span>
+<span class="sd">            model: Red neuronal.</span>
+<span class="sd">            t (tf.Tensor): Tiempo.</span>
 
-    
-<div class="viewcode-block" id="SimpleHarmonicOscillator.analytical_solution">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.SimpleHarmonicOscillator.analytical_solution">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">analytical_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Solución: x(t) = x0*cos(wt) + (v0/w)*sin(wt).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">t_val</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">t</span>
-        <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;initial_conditions&#39;</span><span class="p">][</span><span class="s1">&#39;x0&#39;</span><span class="p">]</span>
-        <span class="n">v0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;initial_conditions&#39;</span><span class="p">][</span><span class="s1">&#39;v0&#39;</span><span class="p">]</span>
-        <span class="n">omega_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">x0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">omega_val</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">v0</span> <span class="o">/</span> <span class="n">omega_val</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">omega_val</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">)</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="DampedHarmonicOscillator">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.DampedHarmonicOscillator">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">DampedHarmonicOscillator</span><span class="p">(</span><span class="n">SimpleHarmonicOscillator</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Oscilador Armónico Amortiguado (DHO).</span>
-
-<span class="sd">    Resuelve la ODE con término de fricción:</span>
-<span class="sd">        x&#39;&#39;(t) + 2*zeta*omega * x&#39;(t) + omega^2 * x(t) = 0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">zeta</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;zeta&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-
-<div class="viewcode-block" id="DampedHarmonicOscillator.pde_residual">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.DampedHarmonicOscillator.pde_residual">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">pde_residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calcula el residual para DHO. Requiere x (posición), x_t (velocidad) y x_tt (aceleración).</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            tf.Tensor: x&#39;&#39; + w^2*x</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">(</span><span class="n">persistent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
             <span class="n">tape</span><span class="o">.</span><span class="n">watch</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
@@ -240,21 +222,68 @@
             <span class="n">x_t</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
         <span class="n">x_tt</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">x_t</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
         <span class="k">del</span> <span class="n">tape</span>
+        
+        <span class="k">if</span> <span class="n">x_tt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Fallo en derivada segunda (SHO).&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x_tt</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">omega</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span></div>
 
-        <span class="k">if</span> <span class="n">x_tt</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">x_t</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;El cálculo de derivadas para DHO falló.&quot;</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="SimpleHarmonicOscillator.analytical_solution">
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.SimpleHarmonicOscillator.analytical_solution">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">analytical_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Solución analítica: x(t) = x0*cos(wt) + (v0/w)*sin(wt).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">t_val</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">t</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;initial_conditions&#39;</span><span class="p">][</span><span class="s1">&#39;x0&#39;</span><span class="p">]</span>
+        <span class="n">v0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;initial_conditions&#39;</span><span class="p">][</span><span class="s1">&#39;v0&#39;</span><span class="p">]</span>
+        <span class="n">omega_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">omega_val</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">v0</span> <span class="o">/</span> <span class="n">omega_val</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">omega_val</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
 
-        <span class="c1"># Ecuación: x&#39;&#39; + 2*zeta*omega*x&#39; + omega^2*x = 0</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_data_with_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extrae columnas &#39;time&#39; y &#39;displacement&#39; del CSV.&quot;&quot;&quot;</span>
+        <span class="n">time_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+        <span class="n">disp_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;displacement&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">time_col</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">disp_col</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Faltan columnas &#39;time&#39; o &#39;displacement&#39; para SHO.&quot;</span><span class="p">)</span>
+        
+        <span class="n">t_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span><span class="p">[</span><span class="n">time_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">x_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span><span class="p">[</span><span class="n">disp_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">t_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">x_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DampedHarmonicOscillator">
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.DampedHarmonicOscillator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DampedHarmonicOscillator</span><span class="p">(</span><span class="n">SimpleHarmonicOscillator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementación del Oscilador Armónico Amortiguado (DHO).</span>
+<span class="sd">    Ec: x&#39;&#39; + 2*zeta*w*x&#39; + w^2*x = 0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zeta</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;zeta&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DampedHarmonicOscillator.pde_residual">
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.DampedHarmonicOscillator.pde_residual">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pde_residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calcula el residuo de la ODE amortiguada.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">(</span><span class="n">persistent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
+            <span class="n">tape</span><span class="o">.</span><span class="n">watch</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+            <span class="n">x_t</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+        <span class="n">x_tt</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">x_t</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">tape</span>
+        <span class="k">if</span> <span class="n">x_tt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Fallo derivadas DHO&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x_tt</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">zeta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega</span> <span class="o">*</span> <span class="n">x_t</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">omega</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span></div>
 
 
 <div class="viewcode-block" id="DampedHarmonicOscillator.analytical_solution">
 <a class="viewcode-back" href="../../pinno.html#pinno.physics.DampedHarmonicOscillator.analytical_solution">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">analytical_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Solución para caso subamortiguado (zeta &lt; 1):</span>
-<span class="sd">        x(t) = exp(-zeta*w*t) * [A*cos(wd*t) + B*sin(wd*t)]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">analytical_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Solución analítica para casos subamortiguados, críticamente amortiguados y sobreamortiguados.&quot;&quot;&quot;</span>
         <span class="n">t_val</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">t</span>
         <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;initial_conditions&#39;</span><span class="p">][</span><span class="s1">&#39;x0&#39;</span><span class="p">]</span>
         <span class="n">v0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;initial_conditions&#39;</span><span class="p">][</span><span class="s1">&#39;v0&#39;</span><span class="p">]</span>
@@ -265,26 +294,30 @@
             <span class="n">omega_d</span> <span class="o">=</span> <span class="n">omega_val</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">zeta_val</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="n">A</span> <span class="o">=</span> <span class="n">x0</span>
             <span class="n">B</span> <span class="o">=</span> <span class="p">(</span><span class="n">v0</span> <span class="o">+</span> <span class="n">zeta_val</span> <span class="o">*</span> <span class="n">omega_val</span> <span class="o">*</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="n">omega_d</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">zeta_val</span> <span class="o">*</span> <span class="n">omega_val</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">omega_d</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">)</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">omega_d</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">))</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">zeta_val</span> <span class="o">*</span> <span class="n">omega_val</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">omega_d</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">)</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">omega_d</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">zeta_val</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">omega_val</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x0</span> <span class="o">+</span> <span class="p">(</span><span class="n">v0</span> <span class="o">+</span> <span class="n">omega_val</span> <span class="o">*</span> <span class="n">x0</span><span class="p">)</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Implementación simplificada: retorna ceros si no es subamortiguado</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">t_val</span><span class="p">)</span></div>
-</div>
+            <span class="n">r1</span> <span class="o">=</span> <span class="o">-</span><span class="n">omega_val</span> <span class="o">*</span> <span class="p">(</span><span class="n">zeta_val</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">zeta_val</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">r2</span> <span class="o">=</span> <span class="o">-</span><span class="n">omega_val</span> <span class="o">*</span> <span class="p">(</span><span class="n">zeta_val</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">zeta_val</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">c1</span> <span class="o">=</span> <span class="p">(</span><span class="n">v0</span> <span class="o">-</span> <span class="n">r2</span> <span class="o">*</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">r1</span> <span class="o">-</span> <span class="n">r2</span><span class="p">)</span>
+            <span class="n">c2</span> <span class="o">=</span> <span class="p">(</span><span class="n">v0</span> <span class="o">-</span> <span class="n">r1</span> <span class="o">*</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">r2</span> <span class="o">-</span> <span class="n">r1</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">r1</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">)</span> <span class="o">+</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">r2</span> <span class="o">*</span> <span class="n">t_val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_data_with_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_extract_data_with_mapping</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="HeatEquation2D">
 <a class="viewcode-back" href="../../pinno.html#pinno.physics.HeatEquation2D">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HeatEquation2D</span><span class="p">(</span><span class="n">PhysicsProblem</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Ecuación de Calor en 2D (Dependiente del tiempo).</span>
-
-<span class="sd">    Resuelve la Ecuación Diferencial Parcial (PDE):</span>
-<span class="sd">        u_t - alpha * (u_xx + u_yy) = 0</span>
-<span class="sd">        </span>
-<span class="sd">    Donde &#39;u&#39; es la temperatura, &#39;t&#39; es tiempo, &#39;x,y&#39; espacio y &#39;alpha&#39; la difusividad.</span>
+<span class="sd">    Implementación de la Ecuación de Calor 2D dependiente del tiempo.</span>
+<span class="sd">    Ec: u_t - alpha * (u_xx + u_yy) = 0</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
+    
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -292,129 +325,87 @@
 <div class="viewcode-block" id="HeatEquation2D.pde_residual">
 <a class="viewcode-back" href="../../pinno.html#pinno.physics.HeatEquation2D.pde_residual">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">pde_residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">xyt</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calcula el residual de la PDE de calor.</span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            xyt: Tensor de forma (N, 3) conteniendo columnas [x, y, t].</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calcula el residuo de la PDE de calor usando derivadas automáticas.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">(</span><span class="n">persistent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
             <span class="n">tape</span><span class="o">.</span><span class="n">watch</span><span class="p">(</span><span class="n">xyt</span><span class="p">)</span>
             <span class="n">u</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">xyt</span><span class="p">)</span>
-            <span class="c1"># Primeras derivadas (Jacobiano)</span>
-            <span class="c1"># Slicing: [:, 0:1] es du/dx, [:, 1:2] es du/dy, [:, 2:3] es du/dt</span>
             <span class="n">u_x</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">xyt</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">u_y</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">xyt</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
             <span class="n">u_t</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">xyt</span><span class="p">)[:,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
-        
-        <span class="c1"># Segundas derivadas (Hessiano diagonal)</span>
         <span class="n">u_xx</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">u_x</span><span class="p">,</span> <span class="n">xyt</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">u_yy</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">u_y</span><span class="p">,</span> <span class="n">xyt</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
         <span class="k">del</span> <span class="n">tape</span>
-
-        <span class="k">if</span> <span class="n">u_xx</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">u_yy</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">u_t</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;El cálculo de derivadas para HEAT falló.&quot;</span><span class="p">)</span>
-
+        <span class="k">if</span> <span class="n">u_xx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Fallo derivadas HEAT&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">u_t</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="n">u_xx</span> <span class="o">+</span> <span class="n">u_yy</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="HeatEquation2D.analytical_solution">
 <a class="viewcode-back" href="../../pinno.html#pinno.physics.HeatEquation2D.analytical_solution">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">analytical_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Solución analítica particular para una placa cuadrada con condiciones iniciales sinusoidales.</span>
-<span class="sd">        u(x,y,t) = exp(-alpha * pi^2 * t) * sin(pi*x) * sin(pi*y)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">analytical_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Solución analítica para una placa cuadrada con condiciones específicas.&quot;&quot;&quot;</span>
         <span class="n">xyt_val</span> <span class="o">=</span> <span class="n">xyt</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">xyt</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">xyt</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">xyt_val</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">xyt_val</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> 
         <span class="n">t</span> <span class="o">=</span> <span class="n">xyt_val</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
         <span class="n">alpha_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">alpha_val</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span></div>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">alpha_val</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="HeatEquation2D.compute_slice_metrics">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.HeatEquation2D.compute_slice_metrics">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_slice_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">t_fix</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calcula métricas y datos para un corte de tiempo específico (Snapshot).</span>
-
-<span class="sd">        Útil para visualizar el campo de temperatura en un instante &#39;t&#39; fijo.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            model: Modelo entrenado.</span>
-<span class="sd">            t_fix (float): Instante de tiempo a evaluar.</span>
-<span class="sd">            resolution (int): Resolución de la malla espacial (N x N).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Tuple: </span>
-<span class="sd">                - mse (float): Error cuadrático medio en este corte.</span>
-<span class="sd">                - u_pred (ndarray): Matriz (N, N) con predicciones.</span>
-<span class="sd">                - u_true (ndarray): Matriz (N, N) con valores reales.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">x_d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;x_domain&#39;</span><span class="p">]</span>
-        <span class="n">y_d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;y_domain&#39;</span><span class="p">]</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_data_with_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extrae columnas x, y, time, temperature del CSV.&quot;&quot;&quot;</span>
+        <span class="n">x_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+        <span class="n">y_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+        <span class="n">time_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+        <span class="n">temp_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;temperature&#39;</span><span class="p">)</span>
         
-        <span class="c1"># Crear grid espacial</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x_d</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x_d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">resolution</span><span class="p">)</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">y_d</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y_d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">resolution</span><span class="p">)</span>
-        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">x_col</span><span class="p">,</span> <span class="n">y_col</span><span class="p">,</span> <span class="n">time_col</span><span class="p">,</span> <span class="n">temp_col</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Faltan columnas para HEAT (x, y, time, temperature)&quot;</span><span class="p">)</span>
         
-        <span class="c1"># Crear tensor input con t fijo</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">t_fix</span><span class="p">)</span>
+        <span class="n">x_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span><span class="p">[</span><span class="n">x_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">y_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span><span class="p">[</span><span class="n">y_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">t_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span><span class="p">[</span><span class="n">time_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">u_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span><span class="p">[</span><span class="n">temp_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         
-        <span class="c1"># Aplanar y apilar: (N*N, 3) -&gt; [x, y, t]</span>
-        <span class="n">x_flat</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-        <span class="n">y_flat</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-        <span class="n">t_flat</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-        
-        <span class="n">input_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">x_flat</span><span class="p">,</span> <span class="n">y_flat</span><span class="p">,</span> <span class="n">t_flat</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="n">input_tensor</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">input_array</span><span class="p">)</span>
-        
-        <span class="c1"># Predicción</span>
-        <span class="n">u_pred_flat</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">input_tensor</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-        <span class="n">u_true_flat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analytical_solution</span><span class="p">(</span><span class="n">input_tensor</span><span class="p">)</span>
-        
-        <span class="c1"># Calcular MSE</span>
-        <span class="n">mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">u_pred_flat</span> <span class="o">-</span> <span class="n">u_true_flat</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-        
-        <span class="c1"># Reshape para visualización (N, N)</span>
-        <span class="k">return</span> <span class="n">mse</span><span class="p">,</span> <span class="n">u_pred_flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">resolution</span><span class="p">,</span> <span class="n">resolution</span><span class="p">),</span> <span class="n">u_true_flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">resolution</span><span class="p">,</span> <span class="n">resolution</span><span class="p">)</span></div>
-</div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">y_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> 
+                <span class="n">t_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">u_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span></div>
 
 
-
-<span class="c1"># ==============================================================================</span>
-<span class="c1"># --- FÁBRICA DE PROBLEMAS ---</span>
-<span class="c1"># ==============================================================================</span>
-
+<span class="c1"># --- Fabrica ---</span>
 <span class="n">PROBLEMS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;SHO&quot;</span><span class="p">:</span> <span class="n">SimpleHarmonicOscillator</span><span class="p">,</span>
     <span class="s2">&quot;DHO&quot;</span><span class="p">:</span> <span class="n">DampedHarmonicOscillator</span><span class="p">,</span>
     <span class="s2">&quot;HEAT&quot;</span><span class="p">:</span> <span class="n">HeatEquation2D</span>
 <span class="p">}</span>
-<span class="sd">&quot;&quot;&quot;dict: Registro de clases de problemas físicos disponibles.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="get_physics_problem">
 <a class="viewcode-back" href="../../pinno.html#pinno.physics.get_physics_problem">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_physics_problem</span><span class="p">(</span><span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">PhysicsProblem</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_physics_problem</span><span class="p">(</span><span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> 
+                        <span class="n">csv_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                        <span class="n">column_mapping</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PhysicsProblem</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Fábrica que instancia un problema físico basado en su nombre.</span>
+<span class="sd">    Fábrica que instancia un problema físico.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        problem_name (str): Identificador (&quot;SHO&quot;, &quot;HEAT&quot;, etc.).</span>
-<span class="sd">        config (Dict[str, Any]): Configuración global a inyectar en la instancia.</span>
+<span class="sd">        problem_name (str): Nombre del problema (&quot;SHO&quot;, &quot;HEAT&quot;).</span>
+<span class="sd">        config (Dict[str, Any]): Configuración global.</span>
+<span class="sd">        csv_data (Optional[pd.DataFrame]): Datos externos.</span>
+<span class="sd">        column_mapping (Optional[Dict[str, str]]): Mapeo de columnas.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        PhysicsProblem: Instancia configurada del problema solicitado.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: Si el problema no existe en el registro `PROBLEMS`.</span>
+<span class="sd">        PhysicsProblem: Instancia configurada del problema.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">problem_name</span> <span class="o">=</span> <span class="n">problem_name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">problem_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">PROBLEMS</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Problema &#39;</span><span class="si">{</span><span class="n">problem_name</span><span class="si">}</span><span class="s2">&#39; no reconocido.&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">PROBLEMS</span><span class="p">[</span><span class="n">problem_name</span><span class="p">](</span><span class="n">config</span><span class="p">)</span></div>
+    
+    <span class="n">problem_class</span> <span class="o">=</span> <span class="n">PROBLEMS</span><span class="p">[</span><span class="n">problem_name</span><span class="p">]</span>
+    <span class="n">problem</span> <span class="o">=</span> <span class="n">problem_class</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">csv_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">column_mapping</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">problem</span><span class="o">.</span><span class="n">set_csv_data</span><span class="p">(</span><span class="n">csv_data</span><span class="p">,</span> <span class="n">column_mapping</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">problem</span></div>
 
 </pre></div>
 

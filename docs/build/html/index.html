@@ -9,6 +9,8 @@
   <title>Bienvenido a la documentación de PINNo Solver &mdash; PINNo Solver 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="_static/fonts.css?v=5583d106" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
@@ -16,10 +18,11 @@
       <script src="_static/documentation_options.js?v=8d563738"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pinno" href="modules.html" /> 
+    <link rel="next" title="API Reference" href="api_reference.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,9 +44,9 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contenido:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">pinno</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -72,22 +75,98 @@
              
   <section id="bienvenido-a-la-documentacion-de-pinno-solver">
 <h1>Bienvenido a la documentación de PINNo Solver<a class="headerlink" href="#bienvenido-a-la-documentacion-de-pinno-solver" title="Link to this heading"></a></h1>
+<p><strong>PINNo</strong> (Physics-Informed Neural Network Interactive Trainer) es un framework educativo y de investigación diseñado para experimentar rápidamente con Redes Neuronales Informadas por la Física.</p>
 <div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contenido:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">pinno</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html">pinno package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#module-pinno.training">Training &amp; Orchestration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#module-pinno.physics">Physics Core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#module-pinno.models">Neural Networks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#module-pinno.data_manage">Data Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#module-pinno.config">Configuration</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
+<section id="fundamentos-teoricos-pinns">
+<h1>Fundamentos Teóricos (PINNs)<a class="headerlink" href="#fundamentos-teoricos-pinns" title="Link to this heading"></a></h1>
+<p>Las <strong>Physics-Informed Neural Networks (PINNs)</strong> son una clase de algoritmos de aprendizaje profundo capaces de resolver tareas supervisadas respetando las leyes físicas descritas por Ecuaciones Diferenciales Parciales (EDP).</p>
+<section id="la-funcion-de-coste-compuesta">
+<h2>La Función de Coste Compuesta<a class="headerlink" href="#la-funcion-de-coste-compuesta" title="Link to this heading"></a></h2>
+<p>A diferencia de las redes neuronales tradicionales que solo minimizan el error respecto a los datos, una PINN minimiza una función compuesta:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{L}_{total} = \omega_{data} \mathcal{L}_{data} + \omega_{PDE} \mathcal{L}_{physics}\]</div>
+<p>Donde:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\mathcal{L}_{data}\)</span>: Error Cuadrático Medio (MSE) entre la predicción <span class="math notranslate nohighlight">\(u\)</span> y los datos observados <span class="math notranslate nohighlight">\(u_{obs}\)</span>.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathcal{L}_{physics}\)</span>: El residuo cuadrático de la ecuación diferencial.</p></li>
+</ul>
+</section>
+<section id="el-residuo-fisico">
+<h2>El Residuo Físico<a class="headerlink" href="#el-residuo-fisico" title="Link to this heading"></a></h2>
+<p>Si definimos una ecuación diferencial general como <span class="math notranslate nohighlight">\(\mathcal{N}[u] = 0\)</span>, el residuo <span class="math notranslate nohighlight">\(f\)</span> se define como:</p>
+<div class="math notranslate nohighlight">
+\[f = \mathcal{N}[\hat{u}(t, x; \theta)]\]</div>
+<p>Durante el entrenamiento, la red ajusta sus pesos <span class="math notranslate nohighlight">\(\theta\)</span> para minimizar <span class="math notranslate nohighlight">\(||f||^2\)</span>, forzando a la solución a cumplir la física.</p>
+</section>
+</section>
+<section id="ejemplos-de-uso">
+<h1>Ejemplos de Uso<a class="headerlink" href="#ejemplos-de-uso" title="Link to this heading"></a></h1>
+<p>PINNo permite dos modos de operación principales.</p>
+<section id="modo-1-analitico-solo-fisica">
+<h2>Modo 1: Analítico (Solo Física)<a class="headerlink" href="#modo-1-analitico-solo-fisica" title="Link to this heading"></a></h2>
+<p>Ideal para encontrar la solución de una ecuación sin tener datos experimentales, solo condiciones iniciales.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pinno.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_active_config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pinno.training</span><span class="w"> </span><span class="kn">import</span> <span class="n">PINNTrainer</span>
+
+<span class="c1"># 1. Cargar configuración para Oscilador Armónico</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">get_active_config</span><span class="p">(</span><span class="s2">&quot;SHO&quot;</span><span class="p">)</span>
+<span class="n">config</span><span class="p">[</span><span class="s2">&quot;EPOCHS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5000</span>
+
+<span class="c1"># 2. Inicializar Entrenador</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">PINNTrainer</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;SHO&quot;</span><span class="p">)</span>
+
+<span class="c1"># 3. Entrenar</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iniciando entrenamiento...&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5000</span><span class="p">):</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">perform_one_step</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="modo-2-data-driven-hibrido">
+<h2>Modo 2: Data-Driven (Híbrido)<a class="headerlink" href="#modo-2-data-driven-hibrido" title="Link to this heading"></a></h2>
+<p>Usa datos de un CSV para guiar la solución, útil para problemas inversos o descubrimiento de parámetros.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pinno.training</span><span class="w"> </span><span class="kn">import</span> <span class="n">PINNTrainer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pinno.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_active_config</span>
+
+<span class="c1"># 1. Cargar datos</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;datos_sensor.csv&quot;</span><span class="p">)</span>
+
+<span class="c1"># 2. Mapear columnas del CSV a variables físicas</span>
+<span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;t_sec&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;displacement&quot;</span><span class="p">:</span> <span class="s2">&quot;x_pos&quot;</span>
+<span class="p">}</span>
+
+<span class="c1"># 3. Entrenar (El sistema detecta el modo híbrido automáticamente)</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">PINNTrainer</span><span class="p">(</span>
+    <span class="n">get_active_config</span><span class="p">(</span><span class="s2">&quot;SHO&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;SHO&quot;</span><span class="p">,</span>
+    <span class="n">csv_data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+    <span class="n">column_mapping</span><span class="o">=</span><span class="n">mapping</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="indices-y-tablas">
+<h1>Índices y Tablas<a class="headerlink" href="#indices-y-tablas" title="Link to this heading"></a></h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
 </section>
 
@@ -95,7 +174,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="modules.html" class="btn btn-neutral float-right" title="pinno" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="api_reference.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

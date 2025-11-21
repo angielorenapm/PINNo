@@ -24,6 +24,9 @@ extensions = [
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 
+# --- MOCKING (Para evitar errores de GUI al documentar) ---
+autodoc_mock_imports = ["tkinter", "PIL", "matplotlib.backends.backend_tkagg"]
+
 # --- 4. TEMA ---
-html_theme = 'sphinx_rtd_theme' # Tema profesional "Read The Docs"
+html_theme = 'renku' # Tema profesional "Read The Docs"
 html_static_path = ['_static']

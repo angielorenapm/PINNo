@@ -6,9 +6,11 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pinno &mdash; PINNo Solver 1.0.0 documentation</title>
+  <title>&lt;no title&gt; &mdash; PINNo Solver 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="_static/fonts.css?v=5583d106" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
@@ -18,9 +20,7 @@
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pinno package" href="pinno.html" />
-    <link rel="prev" title="Bienvenido a la documentación de PINNo Solver" href="index.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,12 +42,9 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">pinno</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html">pinno package</a></li>
-</ul>
-</li>
+              <p class="caption" role="heading"><span class="caption-text">Contenido:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -64,7 +61,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">pinno</li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -74,153 +71,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="pinno">
-<h1>pinno<a class="headerlink" href="#pinno" title="Link to this heading"></a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="pinno.html">pinno package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pinno.gui_modules.html">pinno.gui_modules package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#module-pinno.gui_modules.components">pinno.gui_modules.components module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#module-pinno.gui_modules.data_explorer">pinno.gui_modules.data_explorer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#module-pinno.gui_modules.info_tab">pinno.gui_modules.info_tab module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#module-pinno.gui_modules.report_tab">pinno.gui_modules.report_tab module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#module-pinno.gui_modules.training_tab">pinno.gui_modules.training_tab module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#module-pinno.gui_modules">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html#module-pinno.cli">pinno.cli module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.cli.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html#module-pinno.config">pinno.config module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.config.RESULTS_PATH"><code class="docutils literal notranslate"><span class="pre">RESULTS_PATH</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.config.EPOCHS"><code class="docutils literal notranslate"><span class="pre">EPOCHS</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.config.LEARNING_RATE"><code class="docutils literal notranslate"><span class="pre">LEARNING_RATE</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.config.ALL_CONFIGS"><code class="docutils literal notranslate"><span class="pre">ALL_CONFIGS</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.config.DHO_CONFIG"><code class="docutils literal notranslate"><span class="pre">DHO_CONFIG</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.config.HEAT_CONFIG"><code class="docutils literal notranslate"><span class="pre">HEAT_CONFIG</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.config.SHO_CONFIG"><code class="docutils literal notranslate"><span class="pre">SHO_CONFIG</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.config.get_active_config"><code class="docutils literal notranslate"><span class="pre">get_active_config()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html#module-pinno.data_manage">pinno.data_manage module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.data_manage.DataManager"><code class="docutils literal notranslate"><span class="pre">DataManager</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.data_manage.DataManager.config"><code class="docutils literal notranslate"><span class="pre">DataManager.config</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.data_manage.DataManager.problem_name"><code class="docutils literal notranslate"><span class="pre">DataManager.problem_name</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.data_manage.DataManager.physics_config"><code class="docutils literal notranslate"><span class="pre">DataManager.physics_config</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.data_manage.DataManager.data_config"><code class="docutils literal notranslate"><span class="pre">DataManager.data_config</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.data_manage.DataManager.external_data"><code class="docutils literal notranslate"><span class="pre">DataManager.external_data</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.data_manage.DataManager.training_data"><code class="docutils literal notranslate"><span class="pre">DataManager.training_data</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.data_manage.DataManager.get_training_data"><code class="docutils literal notranslate"><span class="pre">DataManager.get_training_data()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.data_manage.DataManager.load_external_data"><code class="docutils literal notranslate"><span class="pre">DataManager.load_external_data()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.data_manage.DataManager.prepare_data"><code class="docutils literal notranslate"><span class="pre">DataManager.prepare_data()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html#module-pinno.gui_desktop">pinno.gui_desktop module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.gui_desktop.PINNGUI"><code class="docutils literal notranslate"><span class="pre">PINNGUI</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.gui_desktop.PINNGUI.root"><code class="docutils literal notranslate"><span class="pre">PINNGUI.root</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.gui_desktop.PINNGUI.shared_state"><code class="docutils literal notranslate"><span class="pre">PINNGUI.shared_state</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.gui_desktop.PINNGUI.run"><code class="docutils literal notranslate"><span class="pre">PINNGUI.run()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.gui_desktop.launch_gui"><code class="docutils literal notranslate"><span class="pre">launch_gui()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.gui_desktop.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html#module-pinno.gui_web">pinno.gui_web module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.gui_web.reset_training"><code class="docutils literal notranslate"><span class="pre">reset_training()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html#module-pinno.losses">pinno.losses module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.losses.LossCalculator"><code class="docutils literal notranslate"><span class="pre">LossCalculator</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.losses.LossCalculator.loss_weights"><code class="docutils literal notranslate"><span class="pre">LossCalculator.loss_weights</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.losses.LossCalculator.problem_name"><code class="docutils literal notranslate"><span class="pre">LossCalculator.problem_name</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.losses.LossCalculator.loss_functions"><code class="docutils literal notranslate"><span class="pre">LossCalculator.loss_functions</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.losses.LossCalculator.compute_losses"><code class="docutils literal notranslate"><span class="pre">LossCalculator.compute_losses()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html#module-pinno.models">pinno.models module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.models.MODELS"><code class="docutils literal notranslate"><span class="pre">MODELS</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.models.PINN_MLP"><code class="docutils literal notranslate"><span class="pre">PINN_MLP</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.models.PINN_MLP.network"><code class="docutils literal notranslate"><span class="pre">PINN_MLP.network</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.models.PINN_MLP.call"><code class="docutils literal notranslate"><span class="pre">PINN_MLP.call()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.models.get_model"><code class="docutils literal notranslate"><span class="pre">get_model()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html#module-pinno.physics">pinno.physics module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.physics.DampedHarmonicOscillator"><code class="docutils literal notranslate"><span class="pre">DampedHarmonicOscillator</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.physics.DampedHarmonicOscillator.analytical_solution"><code class="docutils literal notranslate"><span class="pre">DampedHarmonicOscillator.analytical_solution()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.physics.DampedHarmonicOscillator.pde_residual"><code class="docutils literal notranslate"><span class="pre">DampedHarmonicOscillator.pde_residual()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.physics.HeatEquation2D"><code class="docutils literal notranslate"><span class="pre">HeatEquation2D</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.physics.HeatEquation2D.analytical_solution"><code class="docutils literal notranslate"><span class="pre">HeatEquation2D.analytical_solution()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.physics.HeatEquation2D.compute_slice_metrics"><code class="docutils literal notranslate"><span class="pre">HeatEquation2D.compute_slice_metrics()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.physics.HeatEquation2D.pde_residual"><code class="docutils literal notranslate"><span class="pre">HeatEquation2D.pde_residual()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.physics.PROBLEMS"><code class="docutils literal notranslate"><span class="pre">PROBLEMS</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.physics.PhysicsProblem"><code class="docutils literal notranslate"><span class="pre">PhysicsProblem</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.physics.PhysicsProblem.config"><code class="docutils literal notranslate"><span class="pre">PhysicsProblem.config</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.physics.PhysicsProblem.domain_config"><code class="docutils literal notranslate"><span class="pre">PhysicsProblem.domain_config</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.physics.PhysicsProblem.analytical_solution"><code class="docutils literal notranslate"><span class="pre">PhysicsProblem.analytical_solution()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.physics.PhysicsProblem.pde_residual"><code class="docutils literal notranslate"><span class="pre">PhysicsProblem.pde_residual()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.physics.SimpleHarmonicOscillator"><code class="docutils literal notranslate"><span class="pre">SimpleHarmonicOscillator</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.physics.SimpleHarmonicOscillator.analytical_solution"><code class="docutils literal notranslate"><span class="pre">SimpleHarmonicOscillator.analytical_solution()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.physics.SimpleHarmonicOscillator.pde_residual"><code class="docutils literal notranslate"><span class="pre">SimpleHarmonicOscillator.pde_residual()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.physics.get_physics_problem"><code class="docutils literal notranslate"><span class="pre">get_physics_problem()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html#module-pinno.training">pinno.training module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer"><code class="docutils literal notranslate"><span class="pre">PINNTrainer</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.config"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.config</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.active_problem"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.active_problem</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.epoch"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.epoch</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.loss_history"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.loss_history</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.model"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.model</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.physics"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.physics</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.data_manager"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.data_manager</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.loss_calculator"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.loss_calculator</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.optimizer"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.optimizer</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.run_dir"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.run_dir</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.get_training_info"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.get_training_info()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.perform_one_step"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.perform_one_step()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="pinno.html#pinno.training.PINNTrainer.train_step"><code class="docutils literal notranslate"><span class="pre">PINNTrainer.train_step()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.training.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno.training.train_complete"><code class="docutils literal notranslate"><span class="pre">train_complete()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="pinno.html#module-pinno">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-
+  
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Bienvenido a la documentación de PINNo Solver" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pinno.html" class="btn btn-neutral float-right" title="pinno package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

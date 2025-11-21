@@ -1,4 +1,11 @@
 # pinno/config.py
+"""
+Módulo de Configuración Central para el Solucionador de PINNs.
+
+Este módulo contiene las configuraciones por defecto para los diferentes problemas físicos,
+así como funciones de utilidad para recuperar estas configuraciones de manera segura.
+"""
+
 import numpy as np
 
 # --- Configuracion General ---
@@ -92,12 +99,20 @@ ALL_CONFIGS = {
 }
 
 def get_active_config(problem_name: str) -> dict:
-    # Devolvemos una COPIA para que los cambios en la GUI no sean permanentes en la sesion global si reinicias
-    import copy
-    problem_name = problem_name.upper()
-    if problem_name not in ALL_CONFIGS:
-        raise ValueError(f"Problema '{problem_name}' no valido.")
-    return copy.deepcopy(ALL_CONFIGS[problem_name])
+    """
+    Recupera y aísla una copia profunda del diccionario de configuración para un problema 
+    físico específico, evitando modificaciones accidentales en la configuración global.
 
-def get_problem_variables(problem_name: str) -> list:
-    return PROBLEM_VARIABLES.get(problem_name.upper(), [])
+    Args:
+        problem_name (str): Identificador del problema (ej. "SHO", "DHO", "HEAT"). 
+                            Insensible a mayúsculas.
+
+    Raises:
+        ValueError: Se lanza si el `problem_name` no existe en el registro `ALL_CONFIGS`.
+
+    Returns:
+        dict: Una copia independiente (deepcopy) conteniendo la configuración del modelo, 
+              física y entrenamiento.
+    """
+    import copy
+    problem_name = problem_name

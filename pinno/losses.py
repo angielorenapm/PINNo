@@ -1,10 +1,35 @@
 # pinno/losses.py
+"""
+Módulo para cálculo de funciones de pérdida (Loss Functions) en PINNs.
+
+Este módulo implementa el patrón Strategy para seleccionar la función de coste 
+adecuada según el problema físico. Calcula tanto el residual físico (PDE) 
+como el error respecto a datos observados (si existen).
+"""
+
 import tensorflow as tf
 import numpy as np
 from typing import Dict, Any, Tuple, List, Optional
 
 class LossCalculator:
+    """
+    Calculador de pérdidas compuesto para entrenamiento de PINNs.
+    
+    Orquesta el cálculo del error total combinando:
+    - Pérdida de la PDE (Residual físico).
+    - Pérdida de condiciones iniciales/frontera (Analítico).
+    - Pérdida de datos observados (Data-Driven).
+    """
+    
     def __init__(self, loss_weights: Dict[str, float], problem_name: str):
+        """
+        Inicializa el calculador con pesos y el problema activo.
+
+        Args:
+            loss_weights (Dict[str, float]): Pesos para ponderar componentes del error 
+                                             (ej. ``{"ode": 1.0, "data": 100.0}``).
+            problem_name (str): Identificador del problema ("SHO", "HEAT").
+        """
         self.loss_weights = loss_weights
         self.problem_name = problem_name
         
@@ -14,12 +39,44 @@ class LossCalculator:
             "HEAT": self._compute_heat_losses
         }
 
-    def compute_losses(self, model, physics, training_data):
+    def compute_losses(self, model: tf.keras.Model, physics, 
+                      training_data: Dict[str, tf.Tensor]) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        """
+        Ejecuta el cálculo de pérdida correspondiente al problema configurado.
+
+        Args:
+            model (tf.keras.Model): La red neuronal (PINN) a evaluar.
+            physics: Instancia del problema físico con métodos ``pde_residual``.
+            training_data (Dict[str, tf.Tensor]): Diccionario con tensores de entrada.
+
+        Raises:
+            ValueError: Si el problema configurado no tiene función de pérdida asociada.
+
+        Returns:
+            Tuple[tf.Tensor, List[tf.Tensor]]:
+                - **Total Loss**: Escalar (suma ponderada) para el optimizador.
+                - **Components**: Lista de valores individuales de cada pérdida.
+        """
         loss_fn = self.loss_functions.get(self.problem_name)
-        if not loss_fn: raise ValueError(f"Problema {self.problem_name} no soportado")
+        if not loss_fn: 
+            raise ValueError(f"Problema {self.problem_name} no soportado")
         return loss_fn(model, physics, training_data)
 
-    def _compute_sho_losses(self, model, physics, training_data):
+    def _compute_sho_losses(self, model: tf.keras.Model, physics, 
+                           training_data: Dict[str, tf.Tensor]) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        """
+        Calcula pérdidas para osciladores armónicos (SHO/DHO).
+        
+        Detecta automáticamente el modo (Analítico vs CSV) inspeccionando las claves de datos.
+
+        Args:
+            model: Red Neuronal.
+            physics: Objeto físico.
+            training_data: Datos de entrada.
+
+        Returns:
+            Tuple: (Loss Total, [Loss PDE, Loss Data/Initial]).
+        """
         # --- FIX: Deteccion automatica por claves de datos ---
         # Si "t0" esta en los datos, estamos en modo Analitico. Si no, CSV.
         if "t0" in training_data:
@@ -48,7 +105,19 @@ class LossCalculator:
                      self.loss_weights.get("data", 200.0) * loss_data)
             return total, [loss_pde, loss_data]
 
-    def _compute_heat_losses(self, model, physics, training_data):
+    def _compute_heat_losses(self, model: tf.keras.Model, physics, 
+                            training_data: Dict[str, tf.Tensor]) -> Tuple[tf.Tensor, List[tf.Tensor]]:
+        """
+        Calcula pérdidas para la ecuación de calor 2D.
+
+        Args:
+            model: Red Neuronal.
+            physics: Objeto físico (HeatEquation2D).
+            training_data: Datos de entrada (xyt).
+
+        Returns:
+            Tuple: (Loss Total, [Loss PDE, Loss Init, Loss Bound] o [Loss PDE, Loss Data]).
+        """
         # Mismo fix para HEAT: detectar 'xyt0'
         if "xyt0" in training_data:
             # Analitico
@@ -80,7 +149,20 @@ class LossCalculator:
             total = self.loss_weights.get("pde", 0.1) * loss_pde + self.loss_weights.get("data", 200.0) * loss_data
             return total, [loss_pde, loss_data]
 
-    def _initial_loss_sho(self, model, t0, x0_true, v0_true):
+    def _initial_loss_sho(self, model: tf.keras.Model, t0: tf.Tensor, 
+                         x0_true: tf.Tensor, v0_true: tf.Tensor) -> tf.Tensor:
+        """
+        Calcula el error de condición inicial para osciladores (posición y velocidad).
+
+        Args:
+            model: Red Neuronal.
+            t0 (tf.Tensor): Tiempo inicial (0.0).
+            x0_true (tf.Tensor): Posición inicial verdadera.
+            v0_true (tf.Tensor): Velocidad inicial verdadera.
+
+        Returns:
+            tf.Tensor: Suma del error cuadrático de posición y velocidad.
+        """
         with tf.GradientTape() as tape:
             tape.watch(t0)
             x0_pred = model(t0)
