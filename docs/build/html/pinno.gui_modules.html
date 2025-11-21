@@ -9,6 +9,8 @@
   <title>pinno.gui_modules package &mdash; PINNo Solver 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="_static/fonts.css?v=5583d106" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
@@ -50,7 +52,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="pinno.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pinno.html#module-pinno.cli">pinno.cli module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pinno.html#pinno-cli-module">pinno.cli module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pinno.html#module-pinno.config">pinno.config module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pinno.html#module-pinno.data_manage">pinno.data_manage module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pinno.html#module-pinno.gui_desktop">pinno.gui_desktop module</a></li>
@@ -221,20 +223,10 @@
 </section>
 <section id="module-pinno.gui_modules.data_explorer">
 <span id="pinno-gui-modules-data-explorer-module"></span><h2>pinno.gui_modules.data_explorer module<a class="headerlink" href="#module-pinno.gui_modules.data_explorer" title="Link to this heading"></a></h2>
-<p>Módulo para la pestaña de exploración de datos - Versión corregida
-- Matriz de correlación se plotea solo al cargar CSV
-- Series temporales se actualizan al cambiar variable Y</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pinno.gui_modules.data_explorer.DataExplorer">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.gui_modules.data_explorer.</span></span><span class="sig-name descname"><span class="pre">DataExplorer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shared_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/data_explorer.html#DataExplorer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.data_explorer.DataExplorer" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.gui_modules.data_explorer.</span></span><span class="sig-name descname"><span class="pre">DataExplorer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/data_explorer.html#DataExplorer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.data_explorer.DataExplorer" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code></p>
-<p>Pestaña de exploración y visualización de datos CSV</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="pinno.gui_modules.data_explorer.DataExplorer.on_shared_state_change">
-<span class="sig-name descname"><span class="pre">on_shared_state_change</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/data_explorer.html#DataExplorer.on_shared_state_change"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.data_explorer.DataExplorer.on_shared_state_change" title="Link to this definition"></a></dt>
-<dd><p>Manejar cambios en el estado global</p>
-</dd></dl>
-
 </dd></dl>
 
 </section>
@@ -242,7 +234,7 @@
 <span id="pinno-gui-modules-info-tab-module"></span><h2>pinno.gui_modules.info_tab module<a class="headerlink" href="#module-pinno.gui_modules.info_tab" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="pinno.gui_modules.info_tab.InfoTab">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.gui_modules.info_tab.</span></span><span class="sig-name descname"><span class="pre">InfoTab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shared_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/info_tab.html#InfoTab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.info_tab.InfoTab" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.gui_modules.info_tab.</span></span><span class="sig-name descname"><span class="pre">InfoTab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/info_tab.html#InfoTab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.info_tab.InfoTab" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code></p>
 <p>Educational Tab: Neural Networks &amp; PINNs for Beginners.
 Styled with a modern ‘Card’ layout for better readability.</p>
@@ -258,37 +250,35 @@ Styled with a modern ‘Card’ layout for better readability.</p>
 <span id="pinno-gui-modules-report-tab-module"></span><h2>pinno.gui_modules.report_tab module<a class="headerlink" href="#module-pinno.gui_modules.report_tab" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="pinno.gui_modules.report_tab.ReportTab">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.gui_modules.report_tab.</span></span><span class="sig-name descname"><span class="pre">ReportTab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shared_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/report_tab.html#ReportTab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.report_tab.ReportTab" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.gui_modules.report_tab.</span></span><span class="sig-name descname"><span class="pre">ReportTab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/report_tab.html#ReportTab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.report_tab.ReportTab" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code></p>
-<p>Pestaña de Reportes y Métricas Finales.
-Permite visualizar resultados y exportar Modelos, Gráficas y Datos.</p>
+<p>Pestaña de Reportes Avanzada:
+- Izquierda: Estadísticas detalladas (Texto).
+- Derecha: Doble gráfico (Loss + Solución) para un reporte completo.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pinno.gui_modules.report_tab.ReportTab.generate_report">
 <span class="sig-name descname"><span class="pre">generate_report</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/report_tab.html#ReportTab.generate_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.report_tab.ReportTab.generate_report" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pinno.gui_modules.report_tab.ReportTab.on_shared_state_change">
-<span class="sig-name descname"><span class="pre">on_shared_state_change</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/report_tab.html#ReportTab.on_shared_state_change"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.report_tab.ReportTab.on_shared_state_change" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="pinno.gui_modules.report_tab.ReportTab.save_data">
+<span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/report_tab.html#ReportTab.save_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.report_tab.ReportTab.save_data" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pinno.gui_modules.report_tab.ReportTab.save_data">
-<span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/report_tab.html#ReportTab.save_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.report_tab.ReportTab.save_data" title="Link to this definition"></a></dt>
-<dd><p>Guarda el historial de pérdida en un CSV.</p>
-</dd></dl>
+<dt class="sig sig-object py" id="pinno.gui_modules.report_tab.ReportTab.save_figure">
+<span class="sig-name descname"><span class="pre">save_figure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/report_tab.html#ReportTab.save_figure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.report_tab.ReportTab.save_figure" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pinno.gui_modules.report_tab.ReportTab.save_model">
 <span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/report_tab.html#ReportTab.save_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.report_tab.ReportTab.save_model" title="Link to this definition"></a></dt>
-<dd><p>Guarda el modelo de Keras (.keras o .h5).</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pinno.gui_modules.report_tab.ReportTab.save_plot">
-<span class="sig-name descname"><span class="pre">save_plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/report_tab.html#ReportTab.save_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.report_tab.ReportTab.save_plot" title="Link to this definition"></a></dt>
-<dd><p>Guarda la gráfica actual como imagen.</p>
-</dd></dl>
+<dt class="sig sig-object py" id="pinno.gui_modules.report_tab.ReportTab.save_report_txt">
+<span class="sig-name descname"><span class="pre">save_report_txt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/report_tab.html#ReportTab.save_report_txt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.report_tab.ReportTab.save_report_txt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -297,15 +287,8 @@ Permite visualizar resultados y exportar Modelos, Gráficas y Datos.</p>
 <span id="pinno-gui-modules-training-tab-module"></span><h2>pinno.gui_modules.training_tab module<a class="headerlink" href="#module-pinno.gui_modules.training_tab" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="pinno.gui_modules.training_tab.TrainingTab">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.gui_modules.training_tab.</span></span><span class="sig-name descname"><span class="pre">TrainingTab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shared_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/training_tab.html#TrainingTab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.training_tab.TrainingTab" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.gui_modules.training_tab.</span></span><span class="sig-name descname"><span class="pre">TrainingTab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/training_tab.html#TrainingTab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.training_tab.TrainingTab" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code></p>
-<p>Pestaña de Entrenamiento y Visualización.
-Permite modificar hiperparámetros de entrenamiento, arquitectura de red y física.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="pinno.gui_modules.training_tab.TrainingTab.on_shared_state_change">
-<span class="sig-name descname"><span class="pre">on_shared_state_change</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/training_tab.html#TrainingTab.on_shared_state_change"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.training_tab.TrainingTab.on_shared_state_change" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="pinno.gui_modules.training_tab.TrainingTab.start_training">
 <span class="sig-name descname"><span class="pre">start_training</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_modules/training_tab.html#TrainingTab.start_training"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_modules.training_tab.TrainingTab.start_training" title="Link to this definition"></a></dt>

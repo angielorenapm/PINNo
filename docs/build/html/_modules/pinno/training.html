@@ -8,6 +8,8 @@
   <title>pinno.training &mdash; PINNo Solver 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="../../_static/fonts.css?v=5583d106" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
@@ -69,115 +71,75 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pinno.training</h1><div class="highlight"><pre>
-<span></span><span class="c1"># src/training.py</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Módulo principal de entrenamiento para PINNs.</span>
-
-<span class="sd">Este módulo actúa como el orquestador central (Facade) del sistema. Su responsabilidad</span>
-<span class="sd">es coordinar la interacción entre los modelos neuronales, la física, los datos</span>
-<span class="sd">y el cálculo de pérdidas para ejecutar el bucle de entrenamiento.</span>
-
-<span class="sd">Patterns:</span>
-<span class="sd">    - Facade: Proporciona una interfaz unificada para el subsistema de entrenamiento.</span>
-<span class="sd">    - Strategy: Delega el cálculo de pérdidas y el muestreo de datos.</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
+<span></span><span class="c1"># pinno/training.py</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
-<span class="c1"># Importaciones relativas para soportar ejecución como paquete</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_model</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.physics</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_physics_problem</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.data_manage</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataManager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">LossCalculator</span>
 
-
 <div class="viewcode-block" id="PINNTrainer">
 <a class="viewcode-back" href="../../pinno.html#pinno.training.PINNTrainer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PINNTrainer</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Entrenador principal para Redes Neuronales Informadas por la Física.</span>
-
-<span class="sd">    Encapsula todo el estado y la lógica necesaria para entrenar un modelo</span>
-<span class="sd">    desde cero.</span>
-
-<span class="sd">    Attributes:</span>
-<span class="sd">        config (Dict[str, Any]): Configuración completa del experimento.</span>
-<span class="sd">        active_problem (str): Nombre del problema físico (ej. &quot;SHO&quot;).</span>
-<span class="sd">        epoch (int): Contador actual de épocas de entrenamiento.</span>
-<span class="sd">        loss_history (List[float]): Registro histórico de la pérdida total.</span>
-<span class="sd">        model (tf.keras.Model): La red neuronal instanciada.</span>
-<span class="sd">        physics (PhysicsProblem): El problema físico configurado.</span>
-<span class="sd">        data_manager (DataManager): El gestor de datos.</span>
-<span class="sd">        loss_calculator (LossCalculator): La estrategia de cálculo de error.</span>
-<span class="sd">        optimizer (tf.keras.optimizers.Optimizer): El optimizador (Adam).</span>
-<span class="sd">        run_dir (str): Ruta donde se guardarán los resultados.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Inicializa el entrenador.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            config_dict (Dict[str, Any]): Diccionario de configuración validado.</span>
-<span class="sd">            problem_name (str): Identificador del problema a resolver.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Configuración básica</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+                 <span class="n">csv_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">column_mapping</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config_dict</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">active_problem</span> <span class="o">=</span> <span class="n">problem_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span> <span class="o">=</span> <span class="n">csv_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span> <span class="o">=</span> <span class="n">column_mapping</span>
+        
+        <span class="c1"># Determinar modo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_csv</span> <span class="o">=</span> <span class="p">(</span><span class="n">csv_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">column_mapping</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss_history</span> <span class="o">=</span> <span class="p">[]</span>
         
-        <span class="c1"># Inicializar componentes especializados</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_components</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_setup_experiment</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_init_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Inicializa los componentes del sistema usando las fábricas correspondientes.</span>
-<span class="sd">        </span>
-<span class="sd">        Instancia el Modelo, la Física, el Gestor de Datos y el Calculador de Pérdidas</span>
-<span class="sd">        basándose en la configuración proporcionada.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Modelo</span>
+        <span class="c1"># 1. Modelo</span>
         <span class="n">model_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;MODEL_CONFIG&quot;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;MODEL_NAME&quot;</span><span class="p">],</span> <span class="n">model_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;input_dim&quot;</span><span class="p">])))</span> <span class="c1"># Init weights</span>
         
-        <span class="c1"># Física</span>
+        <span class="c1"># 2. Fisica</span>
         <span class="n">physics_config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;PHYSICS_CONFIG&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;PHYSICS_CONFIG&quot;</span><span class="p">]}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">physics</span> <span class="o">=</span> <span class="n">get_physics_problem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_problem</span><span class="p">,</span> <span class="n">physics_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">physics</span> <span class="o">=</span> <span class="n">get_physics_problem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_problem</span><span class="p">,</span> <span class="n">physics_config</span><span class="p">,</span> 
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span><span class="p">)</span>
         
-        <span class="c1"># Datos</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_manager</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_problem</span><span class="p">)</span>
+        <span class="c1"># --- FIX PARA ERROR KEYERROR t0 ---</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_csv</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">physics</span><span class="o">.</span><span class="n">has_analytical</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEBUG: CSV Mode enabled for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">active_problem</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         
-        <span class="c1"># Pérdidas</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">loss_calculator</span> <span class="o">=</span> <span class="n">LossCalculator</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;LOSS_WEIGHTS&quot;</span><span class="p">],</span> 
-            <span class="bp">self</span><span class="o">.</span><span class="n">active_problem</span>
-        <span class="p">)</span>
+        <span class="c1"># 3. Datos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_manager</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_problem</span><span class="p">,</span> 
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">csv_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span><span class="p">)</span>
         
-        <span class="c1"># Optimizador</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;LEARNING_RATE&quot;</span><span class="p">])</span>
+        <span class="c1"># 4. Perdidas</span>
+        <span class="n">loss_weights</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;LOSS_WEIGHTS&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_csv</span><span class="p">:</span>
+            <span class="n">loss_weights</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">200.0</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;ode&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_problem</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;SHO&quot;</span><span class="p">,</span> <span class="s2">&quot;DHO&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;pde&quot;</span>
+            <span class="n">loss_weights</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.1</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_calculator</span> <span class="o">=</span> <span class="n">LossCalculator</span><span class="p">(</span><span class="n">loss_weights</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_problem</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;LEARNING_RATE&quot;</span><span class="p">])</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_setup_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Prepara el entorno del experimento.</span>
-<span class="sd">        </span>
-<span class="sd">        Crea el directorio de resultados con marca de tiempo y prepara los</span>
-<span class="sd">        datos de entrenamiento iniciales.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Directorio de resultados</span>
-        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">run_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;RESULTS_PATH&quot;</span><span class="p">],</span> 
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;RUN_NAME&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;csv&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_csv</span> <span class="k">else</span> <span class="s2">&quot;analytical&quot;</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;RESULTS_PATH&quot;</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;RUN_NAME&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">ts</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         
-        <span class="c1"># Preparar datos</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_manager</span><span class="o">.</span><span class="n">prepare_data</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">training_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_manager</span><span class="o">.</span><span class="n">get_training_data</span><span class="p">()</span>
 
@@ -185,44 +147,16 @@
 <a class="viewcode-back" href="../../pinno.html#pinno.training.PINNTrainer.train_step">[docs]</a>
     <span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">train_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Ejecuta un único paso de entrenamiento (Forward + Backward Pass).</span>
-
-<span class="sd">        Este método está decorado con `@tf.function` para compilarlo en un grafo</span>
-<span class="sd">        de TensorFlow, lo que mejora significativamente el rendimiento.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            List[tf.Tensor]: Una lista conteniendo [Pérdida Total, Componente 1, Componente 2...].</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Obtener datos (tf.function capturará estos tensores como constantes en el grafo</span>
-        <span class="c1"># a menos que se pasen como argumentos, pero para PINNs estáticas esto suele funcionar)</span>
-        <span class="n">training_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_data</span>
-        
-        <span class="c1"># Forward pass + cálculo de pérdidas</span>
         <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">()</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
-            <span class="n">total_loss</span><span class="p">,</span> <span class="n">loss_components</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_calculator</span><span class="o">.</span><span class="n">compute_losses</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics</span><span class="p">,</span> <span class="n">training_data</span>
-            <span class="p">)</span>
-        
-        <span class="c1"># Backward pass (Cálculo de gradientes y actualización de pesos)</span>
-        <span class="n">grads</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">total_loss</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">)</span>
+            <span class="n">total</span><span class="p">,</span> <span class="n">components</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_calculator</span><span class="o">.</span><span class="n">compute_losses</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_data</span><span class="p">)</span>
+        <span class="n">grads</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">total</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">))</span>
-        
-        <span class="k">return</span> <span class="p">[</span><span class="n">total_loss</span><span class="p">]</span> <span class="o">+</span> <span class="n">loss_components</span></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">total</span><span class="p">]</span> <span class="o">+</span> <span class="n">components</span></div>
 
 
 <div class="viewcode-block" id="PINNTrainer.perform_one_step">
 <a class="viewcode-back" href="../../pinno.html#pinno.training.PINNTrainer.perform_one_step">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">perform_one_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Interfaz pública de alto nivel para ejecutar una iteración.</span>
-<span class="sd">        </span>
-<span class="sd">        Llama a `train_step`, actualiza el contador de épocas y registra la</span>
-<span class="sd">        historia de pérdidas. Es el método que debe llamar la GUI o el CLI loop.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            List[tf.Tensor]: Lista de valores de pérdida del paso actual.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">losses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_step</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">losses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
@@ -232,96 +166,13 @@
 <div class="viewcode-block" id="PINNTrainer.get_training_info">
 <a class="viewcode-back" href="../../pinno.html#pinno.training.PINNTrainer.get_training_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_training_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Obtiene un resumen del estado actual del entrenamiento.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Dict[str, Any]: Diccionario con época actual, pérdida actual,</span>
-<span class="sd">                            problema y el historial completo.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;epoch&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="p">,</span>
-            <span class="s2">&quot;current_loss&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_history</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="s2">&quot;problem&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_problem</span><span class="p">,</span>
-            <span class="s2">&quot;loss_history&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_history</span>
+            <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_history</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;problem&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_problem</span>
         <span class="p">}</span></div>
 </div>
 
-
-
-<span class="c1"># ==============================================================================</span>
-<span class="c1"># --- FUNCIONES AUXILIARES (CLI) ---</span>
-<span class="c1"># ==============================================================================</span>
-
-<div class="viewcode-block" id="train_complete">
-<a class="viewcode-back" href="../../pinno.html#pinno.training.train_complete">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">train_complete</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Ejecuta un entrenamiento completo de principio a fin (Modo CLI).</span>
-
-<span class="sd">    Esta función bloqueante instancia un entrenador y ejecuta el bucle</span>
-<span class="sd">    principal hasta completar las épocas especificadas.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        config (Dict[str, Any]): Configuración del experimento.</span>
-<span class="sd">        problem_name (str): Nombre del problema físico.</span>
-<span class="sd">        epochs (int, optional): Número de épocas a entrenar. Si es None, usa</span>
-<span class="sd">                                el valor de la configuración.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        PINNTrainer: La instancia del entrenador con el modelo ya entrenado.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">epochs</span> <span class="o">=</span> <span class="n">epochs</span> <span class="ow">or</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;EPOCHS&quot;</span><span class="p">]</span>
-    
-    <span class="n">trainer</span> <span class="o">=</span> <span class="n">PINNTrainer</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">problem_name</span><span class="p">)</span>
-    
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🚀 Training </span><span class="si">{</span><span class="n">problem_name</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2"> epochs...&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📁 Results will be saved to: </span><span class="si">{</span><span class="n">trainer</span><span class="o">.</span><span class="n">run_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    
-    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
-        <span class="n">losses</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">perform_one_step</span><span class="p">()</span>
-        
-        <span class="c1"># Logging progresivo en consola</span>
-        <span class="k">if</span> <span class="n">epoch</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">500</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">loss_str</span> <span class="o">=</span> <span class="s2">&quot; | &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;Loss_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">loss</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span> 
-                                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">loss</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">losses</span><span class="p">)])</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">:</span><span class="s2">5d</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">loss_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Training completed!&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">trainer</span></div>
-
-
-
-<div class="viewcode-block" id="main">
-<a class="viewcode-back" href="../../pinno.html#pinno.training.main">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Punto de entrada principal para la ejecución directa del módulo.</span>
-<span class="sd">    </span>
-<span class="sd">    Permite probar el entrenamiento rápidamente desde la línea de comandos</span>
-<span class="sd">    sin invocar la interfaz gráfica.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="c1"># Intento de importación relativa si se ejecuta como módulo</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_active_config</span>
-    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="c1"># Fallback a importación absoluta si se ejecuta como script suelto</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">src.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_active_config</span>
-    
-    <span class="n">problem_name</span> <span class="o">=</span> <span class="s2">&quot;SHO&quot;</span>  <span class="c1"># Por defecto para pruebas rápidas</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">get_active_config</span><span class="p">(</span><span class="n">problem_name</span><span class="p">)</span>
-    
-    <span class="n">trainer</span> <span class="o">=</span> <span class="n">train_complete</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">problem_name</span><span class="p">)</span>
-    
-    <span class="c1"># Información final</span>
-    <span class="n">info</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">get_training_info</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">📈 Final Epoch: </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📉 Final Loss: </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;current_loss&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
-
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 
            </div>

@@ -1,4 +1,12 @@
 # pinno/training.py
+"""
+Módulo principal de entrenamiento para PINNs.
+
+Este módulo actúa como el orquestador central (Facade) del sistema. Su responsabilidad
+es coordinar la interacción entre los modelos neuronales, la física, los datos
+y el cálculo de pérdidas para ejecutar el bucle de entrenamiento.
+"""
+
 import os
 import tensorflow as tf
 import pandas as pd
@@ -12,9 +20,25 @@ from .data_manage import DataManager
 from .losses import LossCalculator
 
 class PINNTrainer:
+    """
+    Entrenador principal para Redes Neuronales Informadas por la Física.
+
+    Encapsula todo el estado y la lógica necesaria para entrenar un modelo
+    desde cero, incluyendo la configuración de experimentos híbridos (Analítico/CSV).
+    """
+    
     def __init__(self, config_dict: Dict[str, Any], problem_name: str, 
                  csv_data: Optional[pd.DataFrame] = None, 
                  column_mapping: Optional[Dict[str, str]] = None):
+        """
+        Inicializa el entrenador y configura el entorno del experimento.
+
+        Args:
+            config_dict (Dict[str, Any]): Configuración completa del experimento.
+            problem_name (str): Nombre del problema físico ("SHO", "HEAT").
+            csv_data (Optional[pd.DataFrame]): Datos externos para modo Data-Driven.
+            column_mapping (Optional[Dict[str, str]]): Mapeo de columnas CSV.
+        """
         self.config = config_dict
         self.active_problem = problem_name
         self.csv_data = csv_data
@@ -30,6 +54,10 @@ class PINNTrainer:
         self._setup_experiment()
 
     def _init_components(self):
+        """
+        Inicializa los componentes internos (Modelo, Física, Datos, Pérdidas, Optimizador).
+        Ajusta automáticamente los pesos de pérdida si se detecta modo CSV.
+        """
         # 1. Modelo
         model_config = dict(self.config["MODEL_CONFIG"])
         self.model = get_model(self.config["MODEL_NAME"], model_config)
@@ -60,6 +88,7 @@ class PINNTrainer:
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.config["LEARNING_RATE"])
 
     def _setup_experiment(self):
+        """Crea el directorio de resultados y prepara los datos iniciales."""
         mode = "csv" if self.use_csv else "analytical"
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.run_dir = os.path.join(self.config["RESULTS_PATH"], f"{self.config['RUN_NAME']}_{mode}_{ts}")
@@ -70,6 +99,13 @@ class PINNTrainer:
 
     @tf.function
     def train_step(self) -> List[tf.Tensor]:
+        """
+        Ejecuta un paso de entrenamiento compilado (Grafo TF).
+        Calcula gradientes y actualiza los pesos del modelo.
+
+        Returns:
+            List[tf.Tensor]: Lista con [Loss Total, Componente 1, Componente 2, ...].
+        """
         with tf.GradientTape() as tape:
             total, components = self.loss_calculator.compute_losses(self.model, self.physics, self.training_data)
         grads = tape.gradient(total, self.model.trainable_variables)
@@ -77,12 +113,25 @@ class PINNTrainer:
         return [total] + components
 
     def perform_one_step(self) -> List[tf.Tensor]:
+        """
+        Interfaz de alto nivel para ejecutar una época.
+        Actualiza contadores y el historial de pérdidas.
+
+        Returns:
+            List[tf.Tensor]: Valores de pérdida de la época actual.
+        """
         losses = self.train_step()
         self.epoch += 1
         self.loss_history.append(losses[0].numpy())
         return losses
 
     def get_training_info(self) -> Dict[str, Any]:
+        """
+        Obtiene un resumen del estado actual del entrenamiento.
+
+        Returns:
+            Dict[str, Any]: Diccionario con época, pérdida actual y problema activo.
+        """
         return {
             "epoch": self.epoch,
             "loss": self.loss_history[-1] if self.loss_history else 0,
