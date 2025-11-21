@@ -1,201 +1,177 @@
-# gui_modules/data_explorer.py
-"""
-Módulo para la pestaña de exploración de datos - Versión corregida
-- Matriz de correlación se plotea solo al cargar CSV
-- Series temporales se actualizan al cambiar variable Y
-"""
+# pinno/gui_modules/data_explorer.py
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, filedialog, messagebox
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import csv
 
-from .components import DataLoader, PlotManager
-
+from .components import PlotManager, DataLoader
 
 class DataExplorer(ttk.Frame):
-    """Pestaña de exploración y visualización de datos CSV"""
-    
     def __init__(self, parent, shared_state):
         super().__init__(parent)
         self.shared_state = shared_state
         self.data_loader = DataLoader()
         self.plot_manager = PlotManager()
-        
-        # Variables de UI
-        self.y_choice = tk.StringVar(value="Select variable")
-        self._is_plotting = False  # Protección contra múltiples plots
+        self.y_choice = tk.StringVar()
         
         self._build_interface()
-        self._setup_event_handlers()
 
     def _build_interface(self):
-        """Construir la interfaz de la pestaña"""
-        # Panel de controles
-        self._build_control_panel()
-        
-        # Panel principal
-        main_frame = ttk.Frame(self, padding=10)
-        main_frame.pack(fill=tk.BOTH, expand=True)
-
-        # Lista de atributos
-        self._build_attributes_panel(main_frame)
-        
-        # Área de gráficas
-        self._build_plots_panel(main_frame)
-
-    def _build_control_panel(self):
-        """Panel superior con controles"""
-        control_frame = ttk.Frame(self, padding=10)
+        # --- Panel Superior ---
+        control_frame = ttk.Frame(self, padding=5)
         control_frame.pack(side=tk.TOP, fill=tk.X)
         
-        ttk.Button(control_frame, text="Open CSV...", 
-                  command=self._handle_file_open).pack(side=tk.LEFT, padx=5)
-        
-        ttk.Label(control_frame, text="Y variable:").pack(side=tk.LEFT, padx=(15, 5))
-        
-        self.y_selector = ttk.Combobox(
-            control_frame, textvariable=self.y_choice, 
-            state="readonly", width=15
-        )
+        ttk.Button(control_frame, text="📂 Open CSV...", command=self._handle_file_open).pack(side=tk.LEFT, padx=5)
+        self.lbl_filename = ttk.Label(control_frame, text="[No Data]", foreground="gray")
+        self.lbl_filename.pack(side=tk.LEFT, padx=5)
+
+        # Selector Y (Filtrado)
+        ttk.Label(control_frame, text="| Plot Variable Y:").pack(side=tk.LEFT, padx=(20, 5))
+        self.y_selector = ttk.Combobox(control_frame, textvariable=self.y_choice, state="readonly", width=15)
         self.y_selector.pack(side=tk.LEFT)
-
-    def _build_attributes_panel(self, parent):
-        """Panel de lista de atributos del dataset"""
-        attr_frame = ttk.Labelframe(parent, text="Dataset Attributes", padding=10)
-        attr_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=5)
-
-        self.attr_tree = ttk.Treeview(attr_frame, columns=("#", "Attribute"), show="headings", height=16)
-        self.attr_tree.heading("#", text="#")
-        self.attr_tree.heading("Attribute", text="Attribute")
-        self.attr_tree.column("#", width=40, anchor="center")
-        self.attr_tree.column("Attribute", width=200, anchor="w")
-        self.attr_tree.pack(fill=tk.BOTH, expand=True)
-
-    def _build_plots_panel(self, parent):
-        """Panel de visualización de gráficas"""
-        plots_frame = ttk.Frame(parent)
-        plots_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-
-        # Frame para gráficas lado a lado
-        plots_row = ttk.Frame(plots_frame)
-        plots_row.pack(fill=tk.BOTH, expand=True)
-
-        # Gráfica de series temporales
-        self.ts_frame = ttk.Frame(plots_row)
-        self.ts_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
+        self.y_selector.bind('<<ComboboxSelected>>', self._on_variable_change)
         
-        # Gráfica de correlación
-        self.corr_frame = ttk.Frame(plots_row)
-        self.corr_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(5, 0))
+        self.lbl_time_ax = ttk.Label(control_frame, text="X-Axis: [Index]", foreground="blue")
+        self.lbl_time_ax.pack(side=tk.LEFT, padx=15)
 
-        # Crear gráficas
+        # --- Layout Principal ---
+        main_pane = ttk.PanedWindow(self, orient=tk.HORIZONTAL)
+        main_pane.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        # 1. Izquierda: Atributos
+        left_frame = ttk.Frame(main_pane, width=220)
+        main_pane.add(left_frame, weight=0)
+        
+        attr_group = ttk.LabelFrame(left_frame, text="Attributes", padding=5)
+        attr_group.pack(fill="both", expand=True)
+        
+        self.attr_tree = ttk.Treeview(attr_group, columns=("#", "Name"), show="headings", height=20)
+        self.attr_tree.heading("#", text="#")
+        self.attr_tree.heading("Name", text="Name")
+        self.attr_tree.column("#", width=30, anchor="center")
+        self.attr_tree.column("Name", width=140, anchor="w")
+        
+        sb = ttk.Scrollbar(attr_group, orient="vertical", command=self.attr_tree.yview)
+        self.attr_tree.configure(yscrollcommand=sb.set)
+        self.attr_tree.pack(side="left", fill="both", expand=True)
+        sb.pack(side="right", fill="y")
+
+        # 2. Derecha: Graficas
+        right_frame = ttk.Frame(main_pane)
+        main_pane.add(right_frame, weight=4)
+
+        plots_area = ttk.Frame(right_frame)
+        plots_area.pack(fill="both", expand=True)
+        
+        self.ts_frame = ttk.Frame(plots_area)
+        self.ts_frame.pack(side=tk.LEFT, fill="both", expand=True, padx=(0, 5))
+        
+        self.corr_frame = ttk.Frame(plots_area)
+        self.corr_frame.pack(side=tk.LEFT, fill="both", expand=True, padx=(5, 0))
+
         self.ts_fig, self.ts_ax, self.ts_canvas = self.plot_manager.create_time_series_plot(self.ts_frame)
         self.corr_fig, self.corr_ax, self.corr_canvas = self.plot_manager.create_correlation_plot(self.corr_frame)
 
-        # Información del dataset
-        self._build_dataset_info(plots_frame)
-
-    def _build_dataset_info(self, parent):
-        """Panel de información del dataset"""
-        info_frame = ttk.Labelframe(parent, text="Dataset Info", padding=10)
-        info_frame.pack(fill=tk.X, pady=6)
-        self.info_label = ttk.Label(info_frame, text="No dataset loaded")
-        self.info_label.pack(anchor="w")
-
-    def _setup_event_handlers(self):
-        """Configurar manejadores de eventos"""
-        # Actualizar automáticamente cuando cambia la variable Y
-        self.y_selector.bind('<<ComboboxSelected>>', self._on_variable_change)
+        # 3. Inferior: Stats
+        stats_frame = ttk.LabelFrame(right_frame, text="Dataset Info", padding=5)
+        stats_frame.pack(side="bottom", fill="x", pady=(10, 0))
+        self.txt_stats = tk.Text(stats_frame, height=6, font=("Consolas", 8), bg="#f4f4f4")
+        self.txt_stats.pack(fill="both")
 
     def _handle_file_open(self):
-        """Manejar apertura de archivo CSV"""
-        try:
-            df = self.data_loader.load_csv()
-            if df is not None:
-                self._process_loaded_data(df)
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to load file:\n\n{e}")
-
-    def _process_loaded_data(self, df):
-        """Procesar datos cargados exitosamente"""
-        self.shared_state['current_dataframe'] = df
-        self._update_attributes_display(df)
-        self._update_variable_selector(df)
-        self.info_label.config(text=f"Loaded: {self.data_loader.get_filename()}")
+        path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+        if not path: return
         
-        # Plotear matriz de correlación SOLO cuando se carga el CSV
-        self._plot_correlation_matrix()
-
-    def _update_attributes_display(self, df):
-        """Actualizar lista de atributos"""
-        self.attr_tree.delete(*self.attr_tree.get_children())
-        for i, col in enumerate(df.columns, 1):
-            self.attr_tree.insert("", "end", values=(i, str(col)))
-
-    def _update_variable_selector(self, df):
-        """Actualizar selector de variables"""
-        numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-        self.y_selector['values'] = numeric_cols
-        if numeric_cols:
-            self.y_choice.set(numeric_cols[0])
-            # Actualizar gráfica de series temporales automáticamente
-            self._plot_current_data()
-
-    def _plot_correlation_matrix(self):
-        """Generar matriz de correlación solo una vez al cargar el CSV"""
-        df = self.shared_state.get('current_dataframe')
-        if df is None or df.empty:
-            return
-            
         try:
-            # Solo generar matriz de correlación si hay suficientes columnas numéricas
-            numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-            if len(numeric_cols) >= 2:
-                self.plot_manager.plot_correlation_matrix(df[numeric_cols], self.corr_ax, self.corr_canvas)
+            has_header = self._detect_header(path)
+            header_opt = 0 if has_header else None
+            df = pd.read_csv(path, header=header_opt)
+            if header_opt is None: df.columns = [f"col_{i}" for i in range(df.shape[1])]
+            
+            self.shared_state['current_dataframe'] = df
+            self.shared_state['external_data_path'] = path
+            self.lbl_filename.config(text=path.split("/")[-1])
+            
+            self._update_attributes(df)
+            self._prompt_time_column(df) # AQUI se configura el filtro Y
+            
+            self._update_stats(df)
+            self._plot_correlation(df)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Load failed:\n{e}")
+
+    def _detect_header(self, path):
+        try:
+            with open(path, 'r') as f: return csv.Sniffer().has_header(f.read(1024))
+        except: return True
+
+    def _prompt_time_column(self, df):
+        win = tk.Toplevel(self)
+        win.title("Select Time Column")
+        win.geometry("300x150")
+        win.transient(self)
+        win.grab_set()
+        
+        ttk.Label(win, text="Which column is TIME (t)?").pack(pady=10)
+        cb = ttk.Combobox(win, values=list(df.columns), state="readonly")
+        cb.pack()
+        if len(df.columns)>0: cb.current(0)
+        
+        def confirm():
+            col = cb.get()
+            self.shared_state['time_col'] = col
+            self.lbl_time_ax.config(text=f"X-Axis: {col}")
+            
+            # --- CAMBIO: FILTRAR EJE Y ---
+            # Todas las columnas EXCEPTO la de tiempo
+            y_options = [c for c in df.columns if c != col]
+            self.y_selector['values'] = y_options
+            if y_options:
+                self.y_selector.current(0)
+                self._plot_ts()
+            
+            win.destroy()
+            
+        ttk.Button(win, text="Confirm", command=confirm).pack(pady=10)
+        self.wait_window(win)
+
+    def _update_attributes(self, df):
+        for i in self.attr_tree.get_children(): self.attr_tree.delete(i)
+        for idx, col in enumerate(df.columns):
+            self.attr_tree.insert("", "end", values=(idx, col))
+
+    def _update_stats(self, df):
+        self.txt_stats.config(state="normal")
+        self.txt_stats.delete("1.0", tk.END)
+        try: self.txt_stats.insert("1.0", df.describe().to_string())
+        except: self.txt_stats.insert("1.0", "No numeric stats.")
+        self.txt_stats.config(state="disabled")
+
+    def _plot_correlation(self, df):
+        self.plot_manager.plot_correlation_matrix(df, self.corr_ax, self.corr_canvas)
+
+    def _on_variable_change(self, e):
+        self._plot_ts()
+
+    def _plot_ts(self):
+        df = self.shared_state.get('current_dataframe')
+        y = self.y_choice.get()
+        t = self.shared_state.get('time_col')
+        
+        if df is not None and y:
+            self.ts_ax.clear()
+            if t and t in df.columns:
+                tmp = df.sort_values(t)
+                self.ts_ax.plot(tmp[t], tmp[y], label=y)
+                self.ts_ax.set_xlabel(t)
             else:
-                # Limpiar gráfica de correlación si no hay suficientes datos
-                self.corr_ax.clear()
-                self.corr_ax.set_title("Need at least 2 numeric variables")
-                self.corr_canvas.draw()
-        except Exception as e:
-            print(f"Error plotting correlation matrix: {e}")
-
-    def _plot_current_data(self):
-        """Generar solo la gráfica de series temporales - llamada automática al cambiar Y"""
-        # Verificar que tenemos datos
-        df = self.shared_state.get('current_dataframe')
-        if df is None or df.empty:
-            return
-        
-        # Verificar que la columna Y seleccionada existe
-        y_col = self.y_choice.get()
-        if y_col not in df.columns:
-            return
-        
-        # Protección: si ya estamos ploteando, salir
-        if hasattr(self, '_is_plotting') and self._is_plotting:
-            return
-        
-        try:
-            self._is_plotting = True
+                self.ts_ax.plot(df[y], label=y)
+                self.ts_ax.set_xlabel("Index")
             
-            # Generar SOLO la gráfica de series temporales
-            time_col = self.data_loader.detect_time_column(df)
-            self.plot_manager.plot_time_series(df, time_col, y_col, self.ts_ax, self.ts_canvas)
-                
-        except Exception as e:
-            print(f"Error plotting time series: {e}")
-        finally:
-            self._is_plotting = False
-
-    def _on_variable_change(self, event=None):
-        """Manejar cambio de variable seleccionada - actualización automática"""
-        # Pequeño delay para asegurar que el cambio se ha procesado
-        self.after(100, self._plot_current_data)
-
-    def on_shared_state_change(self, key, value):
-        """Manejar cambios en el estado global"""
-        if key == 'current_dataframe' and value is not None:
-            self._process_loaded_data(value)
+            self.ts_ax.set_ylabel(y)
+            self.ts_ax.set_title("Time Series")
+            self.ts_ax.legend()
+            self.ts_ax.grid(True, alpha=0.3)
+            self.ts_canvas.draw()
