@@ -1,3 +1,0 @@
-[console_scripts]
-pinno-cli = pinno.cli:main
-pinno-desktop = pinno.gui_desktop:main

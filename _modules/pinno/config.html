@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pinno.config &mdash; PINNo Solver 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PINNo Solver
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">pinno</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PINNo Solver</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pinno.config</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pinno.config</h1><div class="highlight"><pre>
+<span></span><span class="c1"># pinno/config.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="c1"># --- Configuracion General ---</span>
+<span class="n">RESULTS_PATH</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span>
+<span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">15000</span>
+<span class="n">LEARNING_RATE</span> <span class="o">=</span> <span class="mf">1e-3</span>
+
+<span class="c1"># Variables para mapeo CSV</span>
+<span class="n">PROBLEM_VARIABLES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;SHO&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;displacement&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;DHO&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;displacement&quot;</span><span class="p">],</span> 
+    <span class="s2">&quot;HEAT&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;temperature&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="c1"># ==============================================================================</span>
+<span class="c1"># CONFIGURACIONES</span>
+<span class="c1"># ==============================================================================</span>
+
+<span class="n">SHO_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;RUN_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;Simple_Harmonic_Oscillator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LEARNING_RATE&quot;</span><span class="p">:</span> <span class="n">LEARNING_RATE</span><span class="p">,</span>
+    <span class="s2">&quot;EPOCHS&quot;</span><span class="p">:</span> <span class="n">EPOCHS</span><span class="p">,</span>
+    <span class="s2">&quot;RESULTS_PATH&quot;</span><span class="p">:</span> <span class="n">RESULTS_PATH</span><span class="p">,</span>
+    
+    <span class="s2">&quot;MODEL_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;mlp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MODEL_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;input_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;output_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> 
+        <span class="s2">&quot;num_layers&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;hidden_dim&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span> <span class="s2">&quot;activation&quot;</span><span class="p">:</span> <span class="s2">&quot;tanh&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;PHYSICS_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;omega&quot;</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> 
+        <span class="s2">&quot;t_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span>
+        <span class="c1"># CRITICO: Este diccionario anidado es lo que la GUI lee y modifica</span>
+        <span class="s2">&quot;initial_conditions&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;v0&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;DATA_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;n_initial&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;n_collocation&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">},</span>
+    <span class="s2">&quot;LOSS_WEIGHTS&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;ode&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;initial&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">DHO_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;RUN_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;Damped_Harmonic_Oscillator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LEARNING_RATE&quot;</span><span class="p">:</span> <span class="n">LEARNING_RATE</span><span class="p">,</span>
+    <span class="s2">&quot;EPOCHS&quot;</span><span class="p">:</span> <span class="n">EPOCHS</span><span class="p">,</span>
+    <span class="s2">&quot;RESULTS_PATH&quot;</span><span class="p">:</span> <span class="n">RESULTS_PATH</span><span class="p">,</span>
+
+    <span class="s2">&quot;MODEL_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;mlp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MODEL_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;input_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;output_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> 
+        <span class="s2">&quot;num_layers&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;hidden_dim&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span> <span class="s2">&quot;activation&quot;</span><span class="p">:</span> <span class="s2">&quot;tanh&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;PHYSICS_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;omega&quot;</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> 
+        <span class="s2">&quot;zeta&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> 
+        <span class="s2">&quot;t_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">],</span>
+        <span class="c1"># CRITICO: Condiciones Iniciales expuestas</span>
+        <span class="s2">&quot;initial_conditions&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;v0&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;DATA_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;n_initial&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;n_collocation&quot;</span><span class="p">:</span> <span class="mi">2000</span><span class="p">},</span>
+    <span class="s2">&quot;LOSS_WEIGHTS&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;ode&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;initial&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">HEAT_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;RUN_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;2D_Heat_Equation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LEARNING_RATE&quot;</span><span class="p">:</span> <span class="n">LEARNING_RATE</span><span class="p">,</span>
+    <span class="s2">&quot;EPOCHS&quot;</span><span class="p">:</span> <span class="n">EPOCHS</span><span class="p">,</span>
+    <span class="s2">&quot;RESULTS_PATH&quot;</span><span class="p">:</span> <span class="n">RESULTS_PATH</span><span class="p">,</span>
+
+    <span class="s2">&quot;MODEL_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;mlp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MODEL_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;input_dim&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;output_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> 
+        <span class="s2">&quot;num_layers&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;hidden_dim&quot;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;activation&quot;</span><span class="p">:</span> <span class="s2">&quot;tanh&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;PHYSICS_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> 
+        <span class="s2">&quot;x_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="s2">&quot;y_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="s2">&quot;t_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+        <span class="c1"># HEAT no suele tener condiciones iniciales escalares simples (son funciones),</span>
+        <span class="c1"># por lo que no incluimos &#39;initial_conditions&#39; aqui para evitar confusiones en la GUI.</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;DATA_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;n_initial&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="s2">&quot;n_boundary&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="s2">&quot;n_collocation&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">},</span>
+    <span class="s2">&quot;LOSS_WEIGHTS&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;pde&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;initial&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span> <span class="s2">&quot;boundary&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># ==============================================================================</span>
+<span class="c1"># EXPORTACION</span>
+<span class="c1"># ==============================================================================</span>
+
+<span class="n">ALL_CONFIGS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;SHO&quot;</span><span class="p">:</span> <span class="n">SHO_CONFIG</span><span class="p">,</span>
+    <span class="s2">&quot;DHO&quot;</span><span class="p">:</span> <span class="n">DHO_CONFIG</span><span class="p">,</span>
+    <span class="s2">&quot;HEAT&quot;</span><span class="p">:</span> <span class="n">HEAT_CONFIG</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="get_active_config">
+<a class="viewcode-back" href="../../pinno.html#pinno.config.get_active_config">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_active_config</span><span class="p">(</span><span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="c1"># Devolvemos una COPIA para que los cambios en la GUI no sean permanentes en la sesion global si reinicias</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+    <span class="n">problem_name</span> <span class="o">=</span> <span class="n">problem_name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">problem_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ALL_CONFIGS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Problema &#39;</span><span class="si">{</span><span class="n">problem_name</span><span class="si">}</span><span class="s2">&#39; no valido.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ALL_CONFIGS</span><span class="p">[</span><span class="n">problem_name</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="get_problem_variables">
+<a class="viewcode-back" href="../../pinno.html#pinno.config.get_problem_variables">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_problem_variables</span><span class="p">(</span><span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">PROBLEM_VARIABLES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">problem_name</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="p">[])</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Universidad Distrital Francisco José de Caldas.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

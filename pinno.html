@@ -1,0 +1,496 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pinno package &mdash; PINNo Solver 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pinno.gui_modules package" href="pinno.gui_modules.html" />
+    <link rel="prev" title="pinno" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PINNo Solver
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pinno</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pinno package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html">pinno.gui_modules package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pinno-cli-module">pinno.cli module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pinno.config">pinno.config module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.config.get_active_config"><code class="docutils literal notranslate"><span class="pre">get_active_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.config.get_problem_variables"><code class="docutils literal notranslate"><span class="pre">get_problem_variables()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pinno.data_manage">pinno.data_manage module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.data_manage.DataManager"><code class="docutils literal notranslate"><span class="pre">DataManager</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pinno.gui_desktop">pinno.gui_desktop module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.gui_desktop.PINNGUI"><code class="docutils literal notranslate"><span class="pre">PINNGUI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.gui_desktop.launch_gui"><code class="docutils literal notranslate"><span class="pre">launch_gui()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.gui_desktop.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pinno.gui_web">pinno.gui_web module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.gui_web.reset_training"><code class="docutils literal notranslate"><span class="pre">reset_training()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pinno.losses">pinno.losses module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.losses.LossCalculator"><code class="docutils literal notranslate"><span class="pre">LossCalculator</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pinno.models">pinno.models module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.models.PINN_MLP"><code class="docutils literal notranslate"><span class="pre">PINN_MLP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.models.get_model"><code class="docutils literal notranslate"><span class="pre">get_model()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pinno.physics">pinno.physics module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.DampedHarmonicOscillator"><code class="docutils literal notranslate"><span class="pre">DampedHarmonicOscillator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.HeatEquation2D"><code class="docutils literal notranslate"><span class="pre">HeatEquation2D</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.PhysicsProblem"><code class="docutils literal notranslate"><span class="pre">PhysicsProblem</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.SimpleHarmonicOscillator"><code class="docutils literal notranslate"><span class="pre">SimpleHarmonicOscillator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.physics.get_physics_problem"><code class="docutils literal notranslate"><span class="pre">get_physics_problem()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pinno.training">pinno.training module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pinno.training.PINNTrainer"><code class="docutils literal notranslate"><span class="pre">PINNTrainer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pinno">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PINNo Solver</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pinno</a></li>
+      <li class="breadcrumb-item active">pinno package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pinno.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pinno-package">
+<h1>pinno package<a class="headerlink" href="#pinno-package" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pinno.gui_modules.html">pinno.gui_modules package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pinno.gui_modules.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pinno.gui_modules.html#module-pinno.gui_modules.components">pinno.gui_modules.components module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.DataLoader"><code class="docutils literal notranslate"><span class="pre">DataLoader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.DataLoader.detect_time_column"><code class="docutils literal notranslate"><span class="pre">DataLoader.detect_time_column()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.DataLoader.get_filename"><code class="docutils literal notranslate"><span class="pre">DataLoader.get_filename()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.DataLoader.load_csv"><code class="docutils literal notranslate"><span class="pre">DataLoader.load_csv()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.MetricsCalculator"><code class="docutils literal notranslate"><span class="pre">MetricsCalculator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.MetricsCalculator.basic_metrics"><code class="docutils literal notranslate"><span class="pre">MetricsCalculator.basic_metrics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.MetricsCalculator.comprehensive_report"><code class="docutils literal notranslate"><span class="pre">MetricsCalculator.comprehensive_report()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.PlotManager"><code class="docutils literal notranslate"><span class="pre">PlotManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.PlotManager.create_correlation_plot"><code class="docutils literal notranslate"><span class="pre">PlotManager.create_correlation_plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.PlotManager.create_time_series_plot"><code class="docutils literal notranslate"><span class="pre">PlotManager.create_time_series_plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.PlotManager.plot_correlation_matrix"><code class="docutils literal notranslate"><span class="pre">PlotManager.plot_correlation_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.PlotManager.plot_time_series"><code class="docutils literal notranslate"><span class="pre">PlotManager.plot_time_series()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer"><code class="docutils literal notranslate"><span class="pre">TrainingVisualizer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.init_plots"><code class="docutils literal notranslate"><span class="pre">TrainingVisualizer.init_plots()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.reset_plots"><code class="docutils literal notranslate"><span class="pre">TrainingVisualizer.reset_plots()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.setup_plots"><code class="docutils literal notranslate"><span class="pre">TrainingVisualizer.setup_plots()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.update_heat_solution_plot"><code class="docutils literal notranslate"><span class="pre">TrainingVisualizer.update_heat_solution_plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.update_loss_plot"><code class="docutils literal notranslate"><span class="pre">TrainingVisualizer.update_loss_plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.update_solution_plot"><code class="docutils literal notranslate"><span class="pre">TrainingVisualizer.update_solution_plot()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pinno.gui_modules.html#module-pinno.gui_modules.data_explorer">pinno.gui_modules.data_explorer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.data_explorer.DataExplorer"><code class="docutils literal notranslate"><span class="pre">DataExplorer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pinno.gui_modules.html#module-pinno.gui_modules.info_tab">pinno.gui_modules.info_tab module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.info_tab.InfoTab"><code class="docutils literal notranslate"><span class="pre">InfoTab</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.info_tab.InfoTab.on_shared_state_change"><code class="docutils literal notranslate"><span class="pre">InfoTab.on_shared_state_change()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pinno.gui_modules.html#module-pinno.gui_modules.report_tab">pinno.gui_modules.report_tab module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.report_tab.ReportTab"><code class="docutils literal notranslate"><span class="pre">ReportTab</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.report_tab.ReportTab.generate_report"><code class="docutils literal notranslate"><span class="pre">ReportTab.generate_report()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.report_tab.ReportTab.save_data"><code class="docutils literal notranslate"><span class="pre">ReportTab.save_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.report_tab.ReportTab.save_figure"><code class="docutils literal notranslate"><span class="pre">ReportTab.save_figure()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.report_tab.ReportTab.save_model"><code class="docutils literal notranslate"><span class="pre">ReportTab.save_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.report_tab.ReportTab.save_report_txt"><code class="docutils literal notranslate"><span class="pre">ReportTab.save_report_txt()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pinno.gui_modules.html#module-pinno.gui_modules.training_tab">pinno.gui_modules.training_tab module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.training_tab.TrainingTab"><code class="docutils literal notranslate"><span class="pre">TrainingTab</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.training_tab.TrainingTab.start_training"><code class="docutils literal notranslate"><span class="pre">TrainingTab.start_training()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.training_tab.TrainingTab.stop_training"><code class="docutils literal notranslate"><span class="pre">TrainingTab.stop_training()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pinno.gui_modules.html#pinno.gui_modules.training_tab.TrainingTab.toggle_training"><code class="docutils literal notranslate"><span class="pre">TrainingTab.toggle_training()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pinno.gui_modules.html#module-pinno.gui_modules">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="pinno-cli-module">
+<h2>pinno.cli module<a class="headerlink" href="#pinno-cli-module" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pinno.config">
+<span id="pinno-config-module"></span><h2>pinno.config module<a class="headerlink" href="#module-pinno.config" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pinno.config.get_active_config">
+<span class="sig-prename descclassname"><span class="pre">pinno.config.</span></span><span class="sig-name descname"><span class="pre">get_active_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/pinno/config.html#get_active_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.config.get_active_config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pinno.config.get_problem_variables">
+<span class="sig-prename descclassname"><span class="pre">pinno.config.</span></span><span class="sig-name descname"><span class="pre">get_problem_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/pinno/config.html#get_problem_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.config.get_problem_variables" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pinno.data_manage">
+<span id="pinno-data-manage-module"></span><h2>pinno.data_manage module<a class="headerlink" href="#module-pinno.data_manage" title="Link to this heading"></a></h2>
+<p>Módulo para gestión y muestreo de datos en PINNs.</p>
+<p>Este módulo se encarga de la generación de datos sintéticos (puntos de colocación,
+condiciones iniciales y de frontera) y de la carga de datos experimentales externos.
+Actúa como una fábrica de datos que alimenta el proceso de entrenamiento.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.data_manage.DataManager">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.data_manage.</span></span><span class="sig-name descname"><span class="pre">DataManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csv_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/data_manage.html#DataManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.data_manage.DataManager" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Gestor de datos con soporte para CSV y Mapeo</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.data_manage.DataManager.get_training_data">
+<span class="sig-name descname"><span class="pre">get_training_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pinno/data_manage.html#DataManager.get_training_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.data_manage.DataManager.get_training_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.data_manage.DataManager.prepare_data">
+<span class="sig-name descname"><span class="pre">prepare_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/data_manage.html#DataManager.prepare_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.data_manage.DataManager.prepare_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pinno.gui_desktop">
+<span id="pinno-gui-desktop-module"></span><h2>pinno.gui_desktop module<a class="headerlink" href="#module-pinno.gui_desktop" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.gui_desktop.PINNGUI">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.gui_desktop.</span></span><span class="sig-name descname"><span class="pre">PINNGUI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tk</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_desktop.html#PINNGUI"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_desktop.PINNGUI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.gui_desktop.PINNGUI.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_desktop.html#PINNGUI.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_desktop.PINNGUI.run" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pinno.gui_desktop.launch_gui">
+<span class="sig-prename descclassname"><span class="pre">pinno.gui_desktop.</span></span><span class="sig-name descname"><span class="pre">launch_gui</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pinno.gui_desktop.PINNGUI" title="pinno.gui_desktop.PINNGUI"><span class="pre">PINNGUI</span></a></span></span><a class="reference internal" href="_modules/pinno/gui_desktop.html#launch_gui"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_desktop.launch_gui" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pinno.gui_desktop.main">
+<span class="sig-prename descclassname"><span class="pre">pinno.gui_desktop.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_desktop.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_desktop.main" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pinno.gui_web">
+<span id="pinno-gui-web-module"></span><h2>pinno.gui_web module<a class="headerlink" href="#module-pinno.gui_web" title="Link to this heading"></a></h2>
+<p>Interfaz web (Streamlit) para PINN Interactive Trainer.</p>
+<p>Este módulo define la aplicación web completa utilizando el framework Streamlit.
+A diferencia de la versión de escritorio, esta aplicación se ejecuta en el navegador
+y se basa en un modelo de ejecución reactivo (el script se re-ejecuta con cada interacción).</p>
+<p>Características principales:
+- <strong>Path Patching</strong>: Configuración dinámica de <cite>sys.path</cite> para permitir importaciones</p>
+<blockquote>
+<div><p>absolutas del paquete <cite>pinno</cite> sin necesidad de instalación previa.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p><strong>Gestión de Estado</strong>: Uso de <cite>st.session_state</cite> para persistir el modelo y
+el historial de entrenamiento entre re-ejecuciones del script.</p></li>
+<li><p><strong>Visualización Reactiva</strong>: Gráficos que se actualizan en tiempo real durante
+el bucle de entrenamiento.</p></li>
+</ul>
+<dl>
+<dt>Usage:</dt><dd><p>Para ejecutar esta aplicación, utilice el comando:
+$ streamlit run src/gui_web.py</p>
+<p>O si está instalado como paquete:
+$ streamlit run path/to/site-packages/pinno/gui_web.py</p>
+</dd>
+</dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="pinno.gui_web.reset_training">
+<span class="sig-prename descclassname"><span class="pre">pinno.gui_web.</span></span><span class="sig-name descname"><span class="pre">reset_training</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/gui_web.html#reset_training"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.gui_web.reset_training" title="Link to this definition"></a></dt>
+<dd><p>Reinicia el estado del entrenamiento para comenzar un nuevo experimento.</p>
+<p>Limpia el historial de pérdidas, detiene cualquier entrenamiento activo
+y reinicia la instancia del entrenador.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>problem_name</strong> (<em>str</em>) – Identificador del nuevo problema físico a resolver
+(ej. “SHO”, “HEAT”).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pinno.losses">
+<span id="pinno-losses-module"></span><h2>pinno.losses module<a class="headerlink" href="#module-pinno.losses" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.losses.LossCalculator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.losses.</span></span><span class="sig-name descname"><span class="pre">LossCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss_weights</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/losses.html#LossCalculator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.losses.LossCalculator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.losses.LossCalculator.compute_losses">
+<span class="sig-name descname"><span class="pre">compute_losses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">physics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/losses.html#LossCalculator.compute_losses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.losses.LossCalculator.compute_losses" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pinno.models">
+<span id="pinno-models-module"></span><h2>pinno.models module<a class="headerlink" href="#module-pinno.models" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.models.PINN_MLP">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.models.</span></span><span class="sig-name descname"><span class="pre">PINN_MLP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/models.html#PINN_MLP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.models.PINN_MLP" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.models.PINN_MLP.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/models.html#PINN_MLP.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.models.PINN_MLP.call" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pinno.models.get_model">
+<span class="sig-prename descclassname"><span class="pre">pinno.models.</span></span><span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="reference internal" href="_modules/pinno/models.html#get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.models.get_model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pinno.physics">
+<span id="pinno-physics-module"></span><h2>pinno.physics module<a class="headerlink" href="#module-pinno.physics" title="Link to this heading"></a></h2>
+<p>Módulo que define los problemas físicos y sus ecuaciones diferenciales.</p>
+<p>Este módulo contiene la lógica central de la “Física” en las PINNs. Define las clases
+que encapsulan las Ecuaciones Diferenciales (ODEs y PDEs), calcula los residuos
+utilizando diferenciación automática y proporciona soluciones analíticas para
+validación.</p>
+<dl class="simple">
+<dt>Classes:</dt><dd><p>PhysicsProblem: Clase base abstracta.
+SimpleHarmonicOscillator: Implementación del oscilador armónico (Masa-Resorte).
+DampedHarmonicOscillator: Implementación del oscilador amortiguado.
+HeatEquation2D: Implementación de la ecuación de calor en 2D.</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.physics.DampedHarmonicOscillator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.physics.</span></span><span class="sig-name descname"><span class="pre">DampedHarmonicOscillator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/physics.html#DampedHarmonicOscillator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.DampedHarmonicOscillator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pinno.physics.SimpleHarmonicOscillator" title="pinno.physics.SimpleHarmonicOscillator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleHarmonicOscillator</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.DampedHarmonicOscillator.analytical_solution">
+<span class="sig-name descname"><span class="pre">analytical_solution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#DampedHarmonicOscillator.analytical_solution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.DampedHarmonicOscillator.analytical_solution" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.DampedHarmonicOscillator.pde_residual">
+<span class="sig-name descname"><span class="pre">pde_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#DampedHarmonicOscillator.pde_residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.DampedHarmonicOscillator.pde_residual" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.physics.HeatEquation2D">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.physics.</span></span><span class="sig-name descname"><span class="pre">HeatEquation2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/physics.html#HeatEquation2D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.HeatEquation2D" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pinno.physics.PhysicsProblem" title="pinno.physics.PhysicsProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhysicsProblem</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.HeatEquation2D.analytical_solution">
+<span class="sig-name descname"><span class="pre">analytical_solution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyt</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#HeatEquation2D.analytical_solution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.HeatEquation2D.analytical_solution" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.HeatEquation2D.pde_residual">
+<span class="sig-name descname"><span class="pre">pde_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#HeatEquation2D.pde_residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.HeatEquation2D.pde_residual" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.physics.PhysicsProblem">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.physics.</span></span><span class="sig-name descname"><span class="pre">PhysicsProblem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/physics.html#PhysicsProblem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.PhysicsProblem" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.PhysicsProblem.analytical_solution">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">analytical_solution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#PhysicsProblem.analytical_solution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.PhysicsProblem.analytical_solution" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.PhysicsProblem.get_training_data">
+<span class="sig-name descname"><span class="pre">get_training_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#PhysicsProblem.get_training_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.PhysicsProblem.get_training_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.PhysicsProblem.pde_residual">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pde_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/physics.html#PhysicsProblem.pde_residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.PhysicsProblem.pde_residual" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.PhysicsProblem.set_csv_data">
+<span class="sig-name descname"><span class="pre">set_csv_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/physics.html#PhysicsProblem.set_csv_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.PhysicsProblem.set_csv_data" title="Link to this definition"></a></dt>
+<dd><p>Configura datos CSV para entrenamiento guiado por datos</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.physics.SimpleHarmonicOscillator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.physics.</span></span><span class="sig-name descname"><span class="pre">SimpleHarmonicOscillator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/physics.html#SimpleHarmonicOscillator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.SimpleHarmonicOscillator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pinno.physics.PhysicsProblem" title="pinno.physics.PhysicsProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhysicsProblem</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.SimpleHarmonicOscillator.analytical_solution">
+<span class="sig-name descname"><span class="pre">analytical_solution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#SimpleHarmonicOscillator.analytical_solution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.SimpleHarmonicOscillator.analytical_solution" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.physics.SimpleHarmonicOscillator.pde_residual">
+<span class="sig-name descname"><span class="pre">pde_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/pinno/physics.html#SimpleHarmonicOscillator.pde_residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.SimpleHarmonicOscillator.pde_residual" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pinno.physics.get_physics_problem">
+<span class="sig-prename descclassname"><span class="pre">pinno.physics.</span></span><span class="sig-name descname"><span class="pre">get_physics_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csv_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pinno.physics.PhysicsProblem" title="pinno.physics.PhysicsProblem"><span class="pre">PhysicsProblem</span></a></span></span><a class="reference internal" href="_modules/pinno/physics.html#get_physics_problem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.physics.get_physics_problem" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pinno.training">
+<span id="pinno-training-module"></span><h2>pinno.training module<a class="headerlink" href="#module-pinno.training" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pinno.training.PINNTrainer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pinno.training.</span></span><span class="sig-name descname"><span class="pre">PINNTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csv_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pinno/training.html#PINNTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.training.PINNTrainer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.training.PINNTrainer.get_training_info">
+<span class="sig-name descname"><span class="pre">get_training_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pinno/training.html#PINNTrainer.get_training_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.training.PINNTrainer.get_training_info" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.training.PINNTrainer.perform_one_step">
+<span class="sig-name descname"><span class="pre">perform_one_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pinno/training.html#PINNTrainer.perform_one_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.training.PINNTrainer.perform_one_step" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pinno.training.PINNTrainer.train_step">
+<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pinno/training.html#PINNTrainer.train_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pinno.training.PINNTrainer.train_step" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pinno">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pinno" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="pinno" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pinno.gui_modules.html" class="btn btn-neutral float-right" title="pinno.gui_modules package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Universidad Distrital Francisco José de Caldas.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
