@@ -256,7 +256,7 @@ This repository contains research code developed at Universidad Distrital Franci
 
 **Authors:**
 * Angie Lorena Pineda Morales (alpinedam@udistrital.edu.co)
-* Juan Sebastian Acuña Tellez (jsacunat@udistrital.edu.co)
 * Pablo Patiño Bonilla (jppatinob@udistrital.edu.co)
+* Juan Sebastian Acuña Tellez (jsacunat@udistrital.edu.co
 
 Good luck experimenting with PINNo v1.0.
