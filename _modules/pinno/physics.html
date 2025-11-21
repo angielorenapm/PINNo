@@ -1,11 +1,11 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="../../">
+<html class="writer-html5" lang="es" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pinno.physics &mdash; PINNo Solver 1.0.0 documentation</title>
+  <title>pinno.physics &mdash; PINNo Proyect</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=a6a68382" />
@@ -14,12 +14,13 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/documentation_options.js?v=36c4ab74"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/translations.js?v=f85f4cfb"></script>
     <script src="../../_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+    <link rel="index" title="Índice" href="../../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -31,11 +32,12 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            PINNo Solver
+            PINNo Proyecto
+              <img src="../../_static/logo.png" class="logo" alt="Logotipo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="text" name="q" placeholder="Buscar documentos" aria-label="Buscar documentos" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -52,7 +54,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">PINNo Solver</a>
+          <a href="../../index.html">PINNo Proyecto</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -60,7 +62,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Código de módulo</a></li>
       <li class="breadcrumb-item active">pinno.physics</li>
       <li class="wy-breadcrumbs-aside">
       </li>
@@ -70,7 +72,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for pinno.physics</h1><div class="highlight"><pre>
+  <h1>Código fuente para pinno.physics</h1><div class="highlight"><pre>
 <span></span><span class="c1"># pinno/physics.py</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Módulo que define los problemas físicos y sus ecuaciones diferenciales.</span>
@@ -95,7 +97,7 @@
 
 <span class="c1"># --- Clase Base Abstracta ---</span>
 <div class="viewcode-block" id="PhysicsProblem">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem">[documentos]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PhysicsProblem</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Clase base abstracta para la definición de problemas físicos.</span>
@@ -118,7 +120,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">column_mapping</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="PhysicsProblem.pde_residual">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem.pde_residual">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem.pde_residual">[documentos]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pde_residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -135,7 +137,7 @@
 
     
 <div class="viewcode-block" id="PhysicsProblem.analytical_solution">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem.analytical_solution">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem.analytical_solution">[documentos]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">analytical_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -151,7 +153,7 @@
 
     
 <div class="viewcode-block" id="PhysicsProblem.set_csv_data">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem.set_csv_data">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem.set_csv_data">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_csv_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csv_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">column_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Configura datos CSV para entrenamiento guiado por datos (Data-Driven).</span>
@@ -167,7 +169,7 @@
 
     
 <div class="viewcode-block" id="PhysicsProblem.get_training_data">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem.get_training_data">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.PhysicsProblem.get_training_data">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_training_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Obtiene los datos de entrenamiento extraídos del CSV según el mapeo.</span>
@@ -192,7 +194,7 @@
 <span class="c1"># --- Implementaciones ---</span>
 
 <div class="viewcode-block" id="SimpleHarmonicOscillator">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.SimpleHarmonicOscillator">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.SimpleHarmonicOscillator">[documentos]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimpleHarmonicOscillator</span><span class="p">(</span><span class="n">PhysicsProblem</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Implementación del Oscilador Armónico Simple (SHO).</span>
@@ -204,7 +206,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">omega</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;omega&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SimpleHarmonicOscillator.pde_residual">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.SimpleHarmonicOscillator.pde_residual">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.SimpleHarmonicOscillator.pde_residual">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">pde_residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calcula el residuo de la ODE para el SHO.</span>
@@ -229,7 +231,7 @@
 
     
 <div class="viewcode-block" id="SimpleHarmonicOscillator.analytical_solution">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.SimpleHarmonicOscillator.analytical_solution">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.SimpleHarmonicOscillator.analytical_solution">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">analytical_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Solución analítica: x(t) = x0*cos(wt) + (v0/w)*sin(wt).</span>
@@ -255,7 +257,7 @@
 
 
 <div class="viewcode-block" id="DampedHarmonicOscillator">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.DampedHarmonicOscillator">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.DampedHarmonicOscillator">[documentos]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DampedHarmonicOscillator</span><span class="p">(</span><span class="n">SimpleHarmonicOscillator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Implementación del Oscilador Armónico Amortiguado (DHO).</span>
@@ -267,7 +269,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">zeta</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;zeta&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DampedHarmonicOscillator.pde_residual">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.DampedHarmonicOscillator.pde_residual">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.DampedHarmonicOscillator.pde_residual">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">pde_residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calcula el residuo de la ODE amortiguada.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">(</span><span class="n">persistent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
@@ -281,7 +283,7 @@
 
 
 <div class="viewcode-block" id="DampedHarmonicOscillator.analytical_solution">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.DampedHarmonicOscillator.analytical_solution">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.DampedHarmonicOscillator.analytical_solution">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">analytical_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Solución analítica para casos subamortiguados, críticamente amortiguados y sobreamortiguados.&quot;&quot;&quot;</span>
         <span class="n">t_val</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">t</span>
@@ -311,7 +313,7 @@
 
 
 <div class="viewcode-block" id="HeatEquation2D">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.HeatEquation2D">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.HeatEquation2D">[documentos]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HeatEquation2D</span><span class="p">(</span><span class="n">PhysicsProblem</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Implementación de la Ecuación de Calor 2D dependiente del tiempo.</span>
@@ -323,7 +325,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_config</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
 <div class="viewcode-block" id="HeatEquation2D.pde_residual">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.HeatEquation2D.pde_residual">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.HeatEquation2D.pde_residual">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">pde_residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">xyt</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calcula el residuo de la PDE de calor usando derivadas automáticas.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">(</span><span class="n">persistent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
@@ -340,7 +342,7 @@
 
 
 <div class="viewcode-block" id="HeatEquation2D.analytical_solution">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.HeatEquation2D.analytical_solution">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.HeatEquation2D.analytical_solution">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">analytical_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Solución analítica para una placa cuadrada con condiciones específicas.&quot;&quot;&quot;</span>
         <span class="n">xyt_val</span> <span class="o">=</span> <span class="n">xyt</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">xyt</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">xyt</span>
@@ -379,7 +381,7 @@
 <span class="p">}</span>
 
 <div class="viewcode-block" id="get_physics_problem">
-<a class="viewcode-back" href="../../pinno.html#pinno.physics.get_physics_problem">[docs]</a>
+<a class="viewcode-back" href="../../pinno.html#pinno.physics.get_physics_problem">[documentos]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_physics_problem</span><span class="p">(</span><span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> 
                         <span class="n">csv_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
                         <span class="n">column_mapping</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PhysicsProblem</span><span class="p">:</span>
@@ -416,12 +418,12 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Universidad Distrital Francisco José de Caldas.</p>
+    <p>&#169; Derechos de autor 2023, Universidad Distrital Francisco José de Caldas.</p>
   </div>
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Compilado con <a href="https://www.sphinx-doc.org/">Sphinx</a> usando un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">tema</a>
+    proporcionado por <a href="https://readthedocs.org">Read the Docs</a>.
    
 
 </footer>

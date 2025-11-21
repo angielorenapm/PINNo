@@ -1,11 +1,11 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="../../../">
+<html class="writer-html5" lang="es" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pinno.gui_modules.components &mdash; PINNo Solver 1.0.0 documentation</title>
+  <title>pinno.gui_modules.components &mdash; PINNo Proyect</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=a6a68382" />
@@ -14,12 +14,13 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/documentation_options.js?v=36c4ab74"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/translations.js?v=f85f4cfb"></script>
     <script src="../../../_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../search.html" /> 
+    <link rel="index" title="Índice" href="../../../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -31,19 +32,20 @@
           
           
           <a href="../../../index.html" class="icon icon-home">
-            PINNo Solver
+            PINNo Proyecto
+              <img src="../../../_static/logo.png" class="logo" alt="Logotipo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="text" name="q" placeholder="Buscar documentos" aria-label="Buscar documentos" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contenido:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">pinno</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -52,7 +54,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">PINNo Solver</a>
+          <a href="../../../index.html">PINNo Proyecto</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -60,7 +62,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Código de módulo</a></li>
       <li class="breadcrumb-item active">pinno.gui_modules.components</li>
       <li class="wy-breadcrumbs-aside">
       </li>
@@ -70,7 +72,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for pinno.gui_modules.components</h1><div class="highlight"><pre>
+  <h1>Código fuente para pinno.gui_modules.components</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Componentes reutilizables para la GUI - DataLoader, PlotManager, etc.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -85,7 +87,7 @@
 
 
 <div class="viewcode-block" id="DataLoader">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.DataLoader">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.DataLoader">[documentos]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DataLoader</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Cargador y validador de datos CSV&quot;&quot;&quot;</span>
     
@@ -93,7 +95,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">current_filename</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="DataLoader.load_csv">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.DataLoader.load_csv">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.DataLoader.load_csv">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Cargar archivo CSV y validar formato básico&quot;&quot;&quot;</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">filedialog</span><span class="o">.</span><span class="n">askopenfilename</span><span class="p">(</span>
@@ -119,7 +121,7 @@
 
 
 <div class="viewcode-block" id="DataLoader.detect_time_column">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.DataLoader.detect_time_column">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.DataLoader.detect_time_column">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">detect_time_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Intentar detectar la columna de tiempo automáticamente&quot;&quot;&quot;</span>
         <span class="n">time_indicators</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;t(s)&#39;</span><span class="p">,</span> <span class="s1">&#39;t_s&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">]</span>
@@ -132,7 +134,7 @@
 
 
 <div class="viewcode-block" id="DataLoader.get_filename">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.DataLoader.get_filename">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.DataLoader.get_filename">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtener el nombre del archivo actual&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_filename</span></div>
@@ -141,7 +143,7 @@
 
 
 <div class="viewcode-block" id="PlotManager">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.PlotManager">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.PlotManager">[documentos]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PlotManager</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Gestor de gráficas para la GUI&quot;&quot;&quot;</span>
     
@@ -150,7 +152,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">canvases</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="PlotManager.create_time_series_plot">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.PlotManager.create_time_series_plot">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.PlotManager.create_time_series_plot">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_time_series_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Crear gráfica de series temporales&quot;&quot;&quot;</span>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">4.6</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
@@ -170,7 +172,7 @@
 
 
 <div class="viewcode-block" id="PlotManager.create_correlation_plot">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.PlotManager.create_correlation_plot">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.PlotManager.create_correlation_plot">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_correlation_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Crear gráfica de matriz de correlación&quot;&quot;&quot;</span>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">4.6</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
@@ -187,7 +189,7 @@
 
 
 <div class="viewcode-block" id="PlotManager.plot_time_series">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.PlotManager.plot_time_series">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.PlotManager.plot_time_series">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_time_series</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">time_col</span><span class="p">,</span> <span class="n">value_col</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">canvas</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Graficar series temporales&quot;&quot;&quot;</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
@@ -203,7 +205,7 @@
 
 
 <div class="viewcode-block" id="PlotManager.plot_correlation_matrix">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.PlotManager.plot_correlation_matrix">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.PlotManager.plot_correlation_matrix">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_correlation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">canvas</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Graficar matriz de correlación&quot;&quot;&quot;</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
@@ -237,7 +239,7 @@
 
 
 <div class="viewcode-block" id="TrainingVisualizer">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer">[documentos]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TrainingVisualizer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Visualizador del entrenamiento en tiempo real&quot;&quot;&quot;</span>
     
@@ -253,7 +255,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_original_solution_pos</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Store original position</span>
 
 <div class="viewcode-block" id="TrainingVisualizer.setup_plots">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.setup_plots">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.setup_plots">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">setup_plots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configurar las gráficas de entrenamiento&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
@@ -274,7 +276,7 @@
 
 
 <div class="viewcode-block" id="TrainingVisualizer.init_plots">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.init_plots">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.init_plots">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">init_plots</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Inicializar las gráficas - ONLY called when starting new training&quot;&quot;&quot;</span>
         <span class="c1"># Gráfica de pérdida</span>
@@ -300,7 +302,7 @@
 
 
 <div class="viewcode-block" id="TrainingVisualizer.update_loss_plot">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.update_loss_plot">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.update_loss_plot">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_loss_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">loss_history</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Actualizar gráfica de pérdida&quot;&quot;&quot;</span>
         <span class="n">epochs_data</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">loss_history</span><span class="p">))</span>
@@ -311,7 +313,7 @@
 
 
 <div class="viewcode-block" id="TrainingVisualizer.update_solution_plot">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.update_solution_plot">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.update_solution_plot">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_solution_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">xlabel</span><span class="p">,</span> <span class="n">ylabel</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Actualizar gráfica de solución para problemas 1D&quot;&quot;&quot;</span>
         <span class="c1"># Limpiar y configurar para 1D</span>
@@ -333,7 +335,7 @@
 
 
 <div class="viewcode-block" id="TrainingVisualizer.update_heat_solution_plot">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.update_heat_solution_plot">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.update_heat_solution_plot">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_heat_solution_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">u_pred</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Actualizar gráfica de solución para calor 2D - SINGLE COLORBAR APPROACH&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
@@ -398,7 +400,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_current_colorbar</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="TrainingVisualizer.reset_plots">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.reset_plots">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.TrainingVisualizer.reset_plots">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reset_plots</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset plots completely - only called when starting new training&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_safe_clear_solution_plot</span><span class="p">()</span>
@@ -413,7 +415,7 @@
 
 
 <div class="viewcode-block" id="MetricsCalculator">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.MetricsCalculator">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.MetricsCalculator">[documentos]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MetricsCalculator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculador de métricas para evaluar el modelo&quot;&quot;&quot;</span>
     
@@ -421,7 +423,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="MetricsCalculator.comprehensive_report">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.MetricsCalculator.comprehensive_report">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.MetricsCalculator.comprehensive_report">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">comprehensive_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generar reporte completo de métricas&quot;&quot;&quot;</span>
         <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
@@ -485,7 +487,7 @@
 
 
 <div class="viewcode-block" id="MetricsCalculator.basic_metrics">
-<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.MetricsCalculator.basic_metrics">[docs]</a>
+<a class="viewcode-back" href="../../../pinno.gui_modules.html#pinno.gui_modules.components.MetricsCalculator.basic_metrics">[documentos]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">basic_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Métricas básicas de regresión&quot;&quot;&quot;</span>
         <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
@@ -519,12 +521,12 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Universidad Distrital Francisco José de Caldas.</p>
+    <p>&#169; Derechos de autor 2023, Universidad Distrital Francisco José de Caldas.</p>
   </div>
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Compilado con <a href="https://www.sphinx-doc.org/">Sphinx</a> usando un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">tema</a>
+    proporcionado por <a href="https://readthedocs.org">Read the Docs</a>.
    
 
 </footer>
