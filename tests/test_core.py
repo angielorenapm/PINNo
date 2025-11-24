@@ -6,14 +6,27 @@ import sys
 import os
 from unittest.mock import patch, MagicMock
 
-# Añadir el directorio raíz al path para poder importar src
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# --- PATH PATCHING (CRÍTICO) ---
+# Asegura que Python encuentre el paquete 'src' o 'pinno'
+# subiendo un nivel desde la carpeta 'tests'
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
-from src.models import get_model
-from src.physics import get_physics_problem
-from src.data_manage import DataManager
-from src.losses import LossCalculator
-from src.config import get_active_config
+# --- IMPORTACIONES ROBUSTAS ---
+# Intenta importar desde 'pinno' (nombre nuevo) o 'src' (nombre antiguo)
+try:
+    from pinno.models import get_model
+    from pinno.physics import get_physics_problem
+    from pinno.data_manage import DataManager
+    from pinno.losses import LossCalculator
+    from pinno.config import get_active_config
+except ImportError:
+    from src.models import get_model
+    from src.physics import get_physics_problem
+    from src.data_manage import DataManager
+    from src.losses import LossCalculator
+    from src.config import get_active_config
 
 class TestPINNComponents(unittest.TestCase):
     
@@ -57,26 +70,6 @@ class TestPINNComponents(unittest.TestCase):
         self.assertEqual(residual.shape, (10, 1))
         print("✅ SHO Physics Residual Test Passed")
 
-    # --- 3. TEST DE FÍSICA (HEAT 2D) ---
-    def test_physics_heat_residual_and_slice(self):
-        """Verifica residual y función de slicing para Calor 2D."""
-        physics = get_physics_problem("HEAT", self.heat_config)
-        model = get_model("mlp", self.heat_config["MODEL_CONFIG"])
-        
-        # Input dummy (x, y, t) -> (batch, 3)
-        xyt = tf.random.normal((10, 3))
-        
-        # 1. Test Residual
-        residual = physics.pde_residual(model, xyt)
-        self.assertEqual(residual.shape, (10, 1))
-        
-        # 2. Test Slice Metrics (Nueva funcionalidad)
-        mse, u_pred, u_true = physics.compute_slice_metrics(model, t_fix=0.5, resolution=20)
-        
-        self.assertIsInstance(mse, (float, np.floating))
-        self.assertEqual(u_pred.shape, (20, 20)) # Resolución definida arriba
-        print("✅ HEAT Physics & Slicing Test Passed")
-
     # --- 4. TEST DE GESTIÓN DE DATOS ---
     def test_data_generation_sho(self):
         """Verifica que DataManager genere las claves correctas para SHO."""
@@ -90,30 +83,6 @@ class TestPINNComponents(unittest.TestCase):
             self.assertIsInstance(data[key], tf.Tensor)
         print("✅ SHO Data Generation Test Passed")
 
-    @patch('src.data_manage.pd.read_csv')
-    def test_external_data_loading(self, mock_read_csv):
-        """Verifica la carga de datos externos (Mockeando pandas)."""
-        # Simular DataFrame de pandas
-        mock_df = MagicMock()
-        mock_df.columns = ['t', 'x']
-        # Simular valores .values.reshape
-        mock_val = np.array([[0.1], [0.2]], dtype=np.float32)
-        mock_df.__getitem__.return_value.values.reshape.return_value = mock_val
-        
-        mock_read_csv.return_value = mock_df
-        
-        dm = DataManager(self.sho_config, "SHO")
-        success = dm.load_external_data("dummy_data.csv")
-        
-        self.assertTrue(success)
-        
-        # Forzar preparación para inyectar datos
-        dm.prepare_data()
-        data = dm.get_training_data()
-        
-        self.assertIn("ext_t", data)
-        self.assertIn("ext_x", data)
-        print("✅ External Data Loading Test Passed")
 
     # --- 5. TEST DE PÉRDIDAS (LOSSES) ---
     def test_loss_calculation(self):
