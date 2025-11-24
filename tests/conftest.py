@@ -4,6 +4,8 @@ import sys
 import os
 import tensorflow as tf
 import numpy as np
+from src.config import get_active_config
+
 
 # Agregar el directorio raíz al path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
