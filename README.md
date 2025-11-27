@@ -1,4 +1,4 @@
-# PINNo — Physics-Informed Neural Network (PINN) Interactive Trainer
+# PINNo 
 
 **Status:** v1.0 - Initial Release
 **Authors:** Angie Lorena Pineda Morales, Juan Sebastian Acuña Tellez, Pablo Patiño Bonilla.
