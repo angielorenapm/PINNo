@@ -27,7 +27,7 @@ class PINNGUI:
         # 1. Ocultar ventana principal inmediatamente
         self.root.withdraw()
         
-        self.root.title("PINNo Proyect")
+        self.root.title("PINNo")
         self.root.geometry("1200x750")
         
         # Estado compartido
