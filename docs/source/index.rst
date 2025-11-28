@@ -1,4 +1,6 @@
-Bienvenido a la documentación de PINNo Solver
+.. PINNo documentation master file
+
+Bienvenido a la documentación de PINNo
 =============================================
 
 **PINNo** (Physics-Informed Neural Network Interactive Trainer) es un framework educativo y de investigación diseñado para experimentar rápidamente con Redes Neuronales Informadas por la Física.
@@ -99,3 +101,4 @@ Usa datos de un CSV para guiar la solución, útil para problemas inversos o des
 
 * :ref:`genindex`
 * :ref:`modindex`
+* :ref:`search`

@@ -2,7 +2,22 @@
 import pytest
 import tensorflow as tf
 import numpy as np
-from src.models import get_model
+import sys
+import os
+
+# --- PATH PATCHING (CRÍTICO) ---
+# Asegura que Python encuentre el paquete 'src' o 'pinno'
+# subiendo un nivel desde la carpeta 'tests'
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# --- IMPORTACIONES ROBUSTAS ---
+# Intenta importar desde 'pinno' (nombre nuevo) o 'src' (nombre antiguo)
+try:
+    from pinno.models import get_model
+except ImportError:
+    from src.models import get_model
 
 @pytest.mark.parametrize("activation", ["tanh", "relu", "sigmoid"])
 @pytest.mark.parametrize("num_layers", [2, 4, 6])
