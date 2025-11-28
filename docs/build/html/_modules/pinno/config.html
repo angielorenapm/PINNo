@@ -8,6 +8,8 @@
   <title>pinno.config &mdash; PINNo Solver 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=a6a68382" />
+      <link rel="stylesheet" type="text/css" href="../../_static/fonts.css?v=5583d106" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
@@ -69,29 +71,23 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pinno.config</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Módulo de Configuración Central para el Solucionador de PINNs.</span>
-<span class="sd">(Con ecuación de calor 2D).</span>
-
-<span class="sd">Este módulo centraliza todos los hiperparámetros del modelo, condiciones físicas</span>
-<span class="sd">y configuraciones de entrenamiento. Actúa como la fuente de la verdad para</span>
-<span class="sd">el experimento.</span>
-
-<span class="sd">Attributes:</span>
-<span class="sd">    RESULTS_PATH (str): Ruta del directorio donde se guardarán los modelos y gráficos.</span>
-<span class="sd">    EPOCHS (int): Número predeterminado de iteraciones para el entrenamiento.</span>
-<span class="sd">    LEARNING_RATE (float): Tasa de aprendizaje para el optimizador Adam.</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
+<span></span><span class="c1"># pinno/config.py</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="c1"># --- Configuración General del Experimento (Compartida) ---</span>
+<span class="c1"># --- Configuracion General ---</span>
 <span class="n">RESULTS_PATH</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span>
 <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">15000</span>
 <span class="n">LEARNING_RATE</span> <span class="o">=</span> <span class="mf">1e-3</span>
 
+<span class="c1"># Variables para mapeo CSV</span>
+<span class="n">PROBLEM_VARIABLES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;SHO&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;displacement&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;DHO&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;displacement&quot;</span><span class="p">],</span> 
+    <span class="s2">&quot;HEAT&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;temperature&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+
 <span class="c1"># ==============================================================================</span>
-<span class="c1"># --- DEFINICIÓN DE CONFIGURACIONES PARA CADA PROBLEMA ---</span>
+<span class="c1"># CONFIGURACIONES</span>
 <span class="c1"># ==============================================================================</span>
 
 <span class="n">SHO_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
@@ -102,33 +98,18 @@
     
     <span class="s2">&quot;MODEL_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;mlp&quot;</span><span class="p">,</span>
     <span class="s2">&quot;MODEL_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;input_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> 
-        <span class="s2">&quot;output_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> 
-        <span class="s2">&quot;num_layers&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> 
-        <span class="s2">&quot;hidden_dim&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span> 
-        <span class="s2">&quot;activation&quot;</span><span class="p">:</span> <span class="s2">&quot;tanh&quot;</span>
+        <span class="s2">&quot;input_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;output_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> 
+        <span class="s2">&quot;num_layers&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;hidden_dim&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span> <span class="s2">&quot;activation&quot;</span><span class="p">:</span> <span class="s2">&quot;tanh&quot;</span>
     <span class="p">},</span>
     <span class="s2">&quot;PHYSICS_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;omega&quot;</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> 
-        <span class="s2">&quot;t_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> 
+        <span class="s2">&quot;t_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span>
+        <span class="c1"># CRITICO: Este diccionario anidado es lo que la GUI lee y modifica</span>
         <span class="s2">&quot;initial_conditions&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;v0&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;DATA_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;n_initial&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> 
-        <span class="s2">&quot;n_collocation&quot;</span><span class="p">:</span> <span class="mi">1000</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;LOSS_WEIGHTS&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;ode&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> 
-        <span class="s2">&quot;initial&quot;</span><span class="p">:</span> <span class="mf">100.0</span>
-    <span class="p">}</span>
+    <span class="s2">&quot;DATA_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;n_initial&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;n_collocation&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">},</span>
+    <span class="s2">&quot;LOSS_WEIGHTS&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;ode&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;initial&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">}</span>
 <span class="p">}</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">dict: Configuración para el Oscilador Armónico Simple (SHO).</span>
-
-<span class="sd">Define un sistema masa-resorte sin fricción.</span>
-<span class="sd">- **PHYSICS_CONFIG**: Define `omega` (frecuencia angular) y dominio temporal.</span>
-<span class="sd">- **MODEL_CONFIG**: MLP simple con 1 entrada (t) y 1 salida (x).</span>
-<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="n">DHO_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;RUN_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;Damped_Harmonic_Oscillator&quot;</span><span class="p">,</span>
@@ -138,34 +119,19 @@
 
     <span class="s2">&quot;MODEL_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;mlp&quot;</span><span class="p">,</span>
     <span class="s2">&quot;MODEL_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;input_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> 
-        <span class="s2">&quot;output_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> 
-        <span class="s2">&quot;num_layers&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> 
-        <span class="s2">&quot;hidden_dim&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span> 
-        <span class="s2">&quot;activation&quot;</span><span class="p">:</span> <span class="s2">&quot;tanh&quot;</span>
+        <span class="s2">&quot;input_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;output_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> 
+        <span class="s2">&quot;num_layers&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;hidden_dim&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span> <span class="s2">&quot;activation&quot;</span><span class="p">:</span> <span class="s2">&quot;tanh&quot;</span>
     <span class="p">},</span>
     <span class="s2">&quot;PHYSICS_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;omega&quot;</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> 
         <span class="s2">&quot;zeta&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> 
-        <span class="s2">&quot;t_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">],</span> 
+        <span class="s2">&quot;t_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">],</span>
+        <span class="c1"># CRITICO: Condiciones Iniciales expuestas</span>
         <span class="s2">&quot;initial_conditions&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;v0&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;DATA_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;n_initial&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> 
-        <span class="s2">&quot;n_collocation&quot;</span><span class="p">:</span> <span class="mi">2000</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;LOSS_WEIGHTS&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;ode&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> 
-        <span class="s2">&quot;initial&quot;</span><span class="p">:</span> <span class="mf">100.0</span>
-    <span class="p">}</span>
+    <span class="s2">&quot;DATA_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;n_initial&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;n_collocation&quot;</span><span class="p">:</span> <span class="mi">2000</span><span class="p">},</span>
+    <span class="s2">&quot;LOSS_WEIGHTS&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;ode&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;initial&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">}</span>
 <span class="p">}</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">dict: Configuración para el Oscilador Armónico Amortiguado (DHO).</span>
-
-<span class="sd">Define un sistema masa-resorte con fricción/amortiguamiento.</span>
-<span class="sd">- **PHYSICS_CONFIG**: Incluye `zeta` (coeficiente de amortiguamiento).</span>
-<span class="sd">- **MODEL_CONFIG**: Similar al SHO pero ligeramente más profundo (6 capas) para capturar la caída exponencial.</span>
-<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="n">HEAT_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;RUN_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;2D_Heat_Equation&quot;</span><span class="p">,</span>
@@ -175,40 +141,21 @@
 
     <span class="s2">&quot;MODEL_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;mlp&quot;</span><span class="p">,</span>
     <span class="s2">&quot;MODEL_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;input_dim&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>           <span class="c1"># (x, y, t)</span>
-        <span class="s2">&quot;output_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>          <span class="c1"># u (temperatura)</span>
-        <span class="s2">&quot;num_layers&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> 
-        <span class="s2">&quot;hidden_dim&quot;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> 
-        <span class="s2">&quot;activation&quot;</span><span class="p">:</span> <span class="s2">&quot;tanh&quot;</span>
+        <span class="s2">&quot;input_dim&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;output_dim&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> 
+        <span class="s2">&quot;num_layers&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;hidden_dim&quot;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;activation&quot;</span><span class="p">:</span> <span class="s2">&quot;tanh&quot;</span>
     <span class="p">},</span>
     <span class="s2">&quot;PHYSICS_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>             <span class="c1"># Coeficiente de difusión térmica</span>
-        <span class="s2">&quot;x_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>   <span class="c1"># Dominio espacial en x</span>
-        <span class="s2">&quot;y_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>   <span class="c1"># Dominio espacial en y  </span>
-        <span class="s2">&quot;t_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>    <span class="c1"># Dominio temporal</span>
+        <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> 
+        <span class="s2">&quot;x_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="s2">&quot;y_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="s2">&quot;t_domain&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+        <span class="c1"># HEAT no suele tener condiciones iniciales escalares simples (son funciones),</span>
+        <span class="c1"># por lo que no incluimos &#39;initial_conditions&#39; aqui para evitar confusiones en la GUI.</span>
     <span class="p">},</span>
-    <span class="s2">&quot;DATA_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;n_initial&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>         <span class="c1"># Puntos en t=0 (condición inicial)</span>
-        <span class="s2">&quot;n_boundary&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>        <span class="c1"># Puntos en los bordes espaciales</span>
-        <span class="s2">&quot;n_collocation&quot;</span><span class="p">:</span> <span class="mi">2000</span>    <span class="c1"># Puntos internos para la PDE</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;LOSS_WEIGHTS&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;pde&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>               <span class="c1"># Peso para la pérdida de la PDE</span>
-        <span class="s2">&quot;initial&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span>         <span class="c1"># Peso para la condición inicial</span>
-        <span class="s2">&quot;boundary&quot;</span><span class="p">:</span> <span class="mf">100.0</span>         <span class="c1"># Peso para las condiciones de contorno</span>
-    <span class="p">}</span>
+    <span class="s2">&quot;DATA_CONFIG&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;n_initial&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="s2">&quot;n_boundary&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="s2">&quot;n_collocation&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">},</span>
+    <span class="s2">&quot;LOSS_WEIGHTS&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;pde&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;initial&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span> <span class="s2">&quot;boundary&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">}</span>
 <span class="p">}</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">dict: Configuración para la Ecuación de Calor 2D (HEAT).</span>
-
-<span class="sd">Modelo PDE dependiente del tiempo en dos dimensiones espaciales.</span>
-<span class="sd">- **MODEL_CONFIG**: MLP con 3 entradas (x, y, t) y 1 salida (temperatura u).</span>
-<span class="sd">- **PHYSICS_CONFIG**: Define `alpha` (difusividad térmica) y dominios 2D+T.</span>
-<span class="sd">- **DATA_CONFIG**: Requiere muestreo de frontera (`n_boundary`) además de inicial y colocación.</span>
-<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># ==============================================================================</span>
-<span class="c1"># --- EXPORTACIÓN DE LA CONFIGURACIÓN ACTIVA ---</span>
+<span class="c1"># EXPORTACION</span>
 <span class="c1"># ==============================================================================</span>
 
 <span class="n">ALL_CONFIGS</span> <span class="o">=</span> <span class="p">{</span>
@@ -216,34 +163,22 @@
     <span class="s2">&quot;DHO&quot;</span><span class="p">:</span> <span class="n">DHO_CONFIG</span><span class="p">,</span>
     <span class="s2">&quot;HEAT&quot;</span><span class="p">:</span> <span class="n">HEAT_CONFIG</span>
 <span class="p">}</span>
-<span class="sd">&quot;&quot;&quot;dict: Registro maestro que mapea nombres de problemas a sus diccionarios de configuración.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="get_active_config">
 <a class="viewcode-back" href="../../pinno.html#pinno.config.get_active_config">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_active_config</span><span class="p">(</span><span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Recupera el diccionario de configuración para un problema físico específico.</span>
-
-<span class="sd">    Esta función actúa como una fábrica de configuraciones, validando que el</span>
-<span class="sd">    problema solicitado exista en el registro maestro.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        problem_name (str): Identificador del problema. </span>
-<span class="sd">                            Opciones válidas: &quot;SHO&quot;, &quot;DHO&quot;, &quot;HEAT&quot;.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        dict: Diccionario de configuración completo conteniendo parámetros del modelo,</span>
-<span class="sd">              física y entrenamiento.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: Si `problem_name` no se encuentra en `ALL_CONFIGS`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Devolvemos una COPIA para que los cambios en la GUI no sean permanentes en la sesion global si reinicias</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
     <span class="n">problem_name</span> <span class="o">=</span> <span class="n">problem_name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">problem_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ALL_CONFIGS</span><span class="p">:</span>
-        <span class="n">valid_problems</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ALL_CONFIGS</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">problem_name</span><span class="si">}</span><span class="s2">&#39; no es un problema válido. &quot;</span> 
-                        <span class="sa">f</span><span class="s2">&quot;Elige entre: </span><span class="si">{</span><span class="n">valid_problems</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">ALL_CONFIGS</span><span class="p">[</span><span class="n">problem_name</span><span class="p">]</span></div>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Problema &#39;</span><span class="si">{</span><span class="n">problem_name</span><span class="si">}</span><span class="s2">&#39; no valido.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ALL_CONFIGS</span><span class="p">[</span><span class="n">problem_name</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="get_problem_variables">
+<a class="viewcode-back" href="../../pinno.html#pinno.config.get_problem_variables">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_problem_variables</span><span class="p">(</span><span class="n">problem_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">PROBLEM_VARIABLES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">problem_name</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="p">[])</span></div>
 
 </pre></div>
 

@@ -1,3 +1,4 @@
+# pinno/physics.py
 """
 Módulo que define los problemas físicos y sus ecuaciones diferenciales.
 
@@ -15,131 +16,113 @@ Classes:
 
 import numpy as np
 import tensorflow as tf
+import pandas as pd
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Optional, Tuple
 
-# ==============================================================================
-# --- CLASE BASE ---
-# ==============================================================================
-
+# --- Clase Base Abstracta ---
 class PhysicsProblem(ABC):
     """
-    Clase base abstracta para todos los problemas físicos.
-
-    Define la interfaz que deben implementar los problemas específicos para ser
-    compatibles con el entrenador (PINNTrainer).
-
-    Attributes:
-        config (Dict[str, Any]): Configuración global del experimento.
-        domain_config (dict): Sub-sección 'PHYSICS_CONFIG' con parámetros específicos
-                              (ej. omega, zeta, alpha, dominios).
+    Clase base abstracta para la definición de problemas físicos.
+    
+    Provee la interfaz común para calcular residuos de ecuaciones diferenciales
+    y soluciones analíticas, así como la gestión de datos externos (CSV).
     """
     
     def __init__(self, config: Dict[str, Any]):
         """
-        Inicializa el problema físico.
+        Inicializa el problema físico con la configuración dada.
 
         Args:
-            config (Dict[str, Any]): Configuración completa proveniente de `config.py`.
+            config (Dict[str, Any]): Diccionario de configuración global.
         """
         self.config = config
         self.domain_config = config['PHYSICS_CONFIG']
+        self.has_analytical = True
+        self.csv_data = None
+        self.column_mapping = None
 
     @abstractmethod
-    def pde_residual(self, model: tf.keras.Model, points: tf.Tensor) -> tf.Tensor:
+    def pde_residual(self, model: tf.keras.Model, points: tf.Tensor):
         """
-        Calcula el residual de la ecuación diferencial en los puntos dados.
-
-        El residual es la diferencia entre el lado izquierdo y derecho de la ecuación.
-        Si la red neuronal respeta la física, este valor debe ser cercano a 0.
+        Calcula el residuo de la ecuación diferencial (PDE/ODE).
 
         Args:
-            model (tf.keras.Model): La red neuronal que aproxima la solución.
-            points (tf.Tensor): Puntos de colocación (inputs) donde evaluar la ecuación.
+            model (tf.keras.Model): Modelo de red neuronal.
+            points (tf.Tensor): Puntos de colocación para evaluar la ecuación.
 
         Returns:
-            tf.Tensor: Tensor con los valores del residual para cada punto.
+            tf.Tensor: El residuo calculado (debe tender a 0).
         """
         pass
     
     @abstractmethod
-    def analytical_solution(self, points: np.ndarray | tf.Tensor) -> np.ndarray:
+    def analytical_solution(self, points) -> tf.Tensor:
         """
-        Calcula la solución exacta (analítica) del problema.
-
-        Se utiliza para calcular el error real y generar gráficas comparativas.
+        Calcula la solución analítica exacta en los puntos dados.
 
         Args:
-            points (Union[np.ndarray, tf.Tensor]): Puntos donde evaluar la solución.
+            points (tf.Tensor): Puntos de evaluación.
 
         Returns:
-            np.ndarray: Valores exactos de la solución.
+            tf.Tensor: Solución exacta.
+        """
+        pass
+    
+    def set_csv_data(self, csv_data: pd.DataFrame, column_mapping: Dict[str, str]):
+        """
+        Configura datos CSV para entrenamiento guiado por datos (Data-Driven).
+        Desactiva la bandera ``has_analytical``.
+
+        Args:
+            csv_data (pd.DataFrame): DataFrame con datos experimentales.
+            column_mapping (Dict[str, str]): Mapeo de variables físicas a columnas del CSV.
+        """
+        self.csv_data = csv_data
+        self.column_mapping = column_mapping
+        self.has_analytical = False
+    
+    def get_training_data(self) -> Optional[Tuple]:
+        """
+        Obtiene los datos de entrenamiento extraídos del CSV según el mapeo.
+
+        Returns:
+            Optional[Tuple]: Tupla con tensores de datos (ej. t, x) o None si no hay datos.
+        """
+        if self.csv_data is None or self.column_mapping is None:
+            return None
+        return self._extract_data_with_mapping()
+
+    @abstractmethod
+    def _extract_data_with_mapping(self) -> Optional[Tuple]:
+        """
+        Método interno para extraer columnas específicas del CSV.
+        Debe ser implementado por cada subclase.
         """
         pass
 
-
-# ==============================================================================
-# --- IMPLEMENTACIONES ESPECÍFICAS ---
-# ==============================================================================
+# --- Implementaciones ---
 
 class SimpleHarmonicOscillator(PhysicsProblem):
     """
-    Oscilador Armónico Simple (SHO).
-
-    Resuelve la Ecuación Diferencial Ordinaria (ODE) de segundo orden:
-        x''(t) + omega^2 * x(t) = 0
+    Implementación del Oscilador Armónico Simple (SHO).
+    Ec: x'' + w^2 * x = 0
     """
-
+    
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.omega = tf.constant(self.domain_config['omega'], dtype=tf.float32)
 
     def pde_residual(self, model: tf.keras.Model, t: tf.Tensor) -> tf.Tensor:
         """
-        Calcula el residual para SHO: R = x_tt + omega^2 * x.
+        Calcula el residuo de la ODE para el SHO.
         
-        Usa `tf.GradientTape` anidado/persistente para calcular derivadas de segundo orden.
-        """
-        with tf.GradientTape(persistent=True) as tape:
-            tape.watch(t)
-            x = model(t)
-            x_t = tape.gradient(x, t) # Primera derivada (velocidad)
-            
-        x_tt = tape.gradient(x_t, t)  # Segunda derivada (aceleración)
-        del tape
-        
-        if x_tt is None:
-            raise ValueError("El cálculo de la segunda derivada (x_tt) falló. "
-                             "Verifique que la función de activación sea diferenciable.")
-                             
-        return x_tt + (self.omega**2) * x
-    
-    def analytical_solution(self, t) -> np.ndarray:
-        """
-        Solución: x(t) = x0*cos(wt) + (v0/w)*sin(wt).
-        """
-        t_val = t.numpy() if hasattr(t, 'numpy') else t
-        x0 = self.domain_config['initial_conditions']['x0']
-        v0 = self.domain_config['initial_conditions']['v0']
-        omega_val = self.omega.numpy()
-        return x0 * np.cos(omega_val * t_val) + (v0 / omega_val) * np.sin(omega_val * t_val)
+        Args:
+            model: Red neuronal.
+            t (tf.Tensor): Tiempo.
 
-
-class DampedHarmonicOscillator(SimpleHarmonicOscillator):
-    """
-    Oscilador Armónico Amortiguado (DHO).
-
-    Resuelve la ODE con término de fricción:
-        x''(t) + 2*zeta*omega * x'(t) + omega^2 * x(t) = 0
-    """
-
-    def __init__(self, config: Dict[str, Any]):
-        super().__init__(config)
-        self.zeta = tf.constant(self.domain_config['zeta'], dtype=tf.float32)
-
-    def pde_residual(self, model: tf.keras.Model, t: tf.Tensor) -> tf.Tensor:
-        """
-        Calcula el residual para DHO. Requiere x (posición), x_t (velocidad) y x_tt (aceleración).
+        Returns:
+            tf.Tensor: x'' + w^2*x
         """
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(t)
@@ -147,18 +130,56 @@ class DampedHarmonicOscillator(SimpleHarmonicOscillator):
             x_t = tape.gradient(x, t)
         x_tt = tape.gradient(x_t, t)
         del tape
+        
+        if x_tt is None:
+            raise ValueError("Fallo en derivada segunda (SHO).")
+        return x_tt + (self.omega**2) * x
+    
+    def analytical_solution(self, t) -> tf.Tensor:
+        """
+        Solución analítica: x(t) = x0*cos(wt) + (v0/w)*sin(wt).
+        """
+        t_val = t.numpy() if hasattr(t, 'numpy') else t
+        x0 = self.domain_config['initial_conditions']['x0']
+        v0 = self.domain_config['initial_conditions']['v0']
+        omega_val = self.omega.numpy()
+        result = x0 * np.cos(omega_val * t_val) + (v0 / omega_val) * np.sin(omega_val * t_val)
+        return tf.constant(result, dtype=tf.float32)
+    
+    def _extract_data_with_mapping(self) -> Optional[Tuple]:
+        """Extrae columnas 'time' y 'displacement' del CSV."""
+        time_col = self.column_mapping.get('time')
+        disp_col = self.column_mapping.get('displacement')
+        if not time_col or not disp_col:
+            raise ValueError("Faltan columnas 'time' o 'displacement' para SHO.")
+        
+        t_data = self.csv_data[time_col].values.reshape(-1, 1)
+        x_data = self.csv_data[disp_col].values.reshape(-1, 1)
+        return t_data.astype(np.float32), x_data.astype(np.float32)
 
-        if x_tt is None or x_t is None:
-             raise ValueError("El cálculo de derivadas para DHO falló.")
+class DampedHarmonicOscillator(SimpleHarmonicOscillator):
+    """
+    Implementación del Oscilador Armónico Amortiguado (DHO).
+    Ec: x'' + 2*zeta*w*x' + w^2*x = 0
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        super().__init__(config)
+        self.zeta = tf.constant(self.domain_config['zeta'], dtype=tf.float32)
 
-        # Ecuación: x'' + 2*zeta*omega*x' + omega^2*x = 0
+    def pde_residual(self, model: tf.keras.Model, t: tf.Tensor) -> tf.Tensor:
+        """Calcula el residuo de la ODE amortiguada."""
+        with tf.GradientTape(persistent=True) as tape:
+            tape.watch(t)
+            x = model(t)
+            x_t = tape.gradient(x, t)
+        x_tt = tape.gradient(x_t, t)
+        del tape
+        if x_tt is None: raise ValueError("Fallo derivadas DHO")
         return x_tt + 2 * self.zeta * self.omega * x_t + (self.omega**2) * x
 
-    def analytical_solution(self, t) -> np.ndarray:
-        """
-        Solución para caso subamortiguado (zeta < 1):
-        x(t) = exp(-zeta*w*t) * [A*cos(wd*t) + B*sin(wd*t)]
-        """
+    def analytical_solution(self, t) -> tf.Tensor:
+        """Solución analítica para casos subamortiguados, críticamente amortiguados y sobreamortiguados."""
         t_val = t.numpy() if hasattr(t, 'numpy') else t
         x0 = self.domain_config['initial_conditions']['x0']
         v0 = self.domain_config['initial_conditions']['v0']
@@ -169,137 +190,102 @@ class DampedHarmonicOscillator(SimpleHarmonicOscillator):
             omega_d = omega_val * np.sqrt(1 - zeta_val**2)
             A = x0
             B = (v0 + zeta_val * omega_val * x0) / omega_d
-            return np.exp(-zeta_val * omega_val * t_val) * (A * np.cos(omega_d * t_val) + B * np.sin(omega_d * t_val))
+            result = np.exp(-zeta_val * omega_val * t_val) * (A * np.cos(omega_d * t_val) + B * np.sin(omega_d * t_val))
+        elif zeta_val == 1:
+            result = np.exp(-omega_val * t_val) * (x0 + (v0 + omega_val * x0) * t_val)
         else:
-            # Implementación simplificada: retorna ceros si no es subamortiguado
-            return np.zeros_like(t_val)
+            r1 = -omega_val * (zeta_val - np.sqrt(zeta_val**2 - 1))
+            r2 = -omega_val * (zeta_val + np.sqrt(zeta_val**2 - 1))
+            c1 = (v0 - r2 * x0) / (r1 - r2)
+            c2 = (v0 - r1 * x0) / (r2 - r1)
+            result = c1 * np.exp(r1 * t_val) + c2 * np.exp(r2 * t_val)
+        return tf.constant(result, dtype=tf.float32)
 
+    def _extract_data_with_mapping(self) -> Optional[Tuple]:
+        return super()._extract_data_with_mapping()
 
 class HeatEquation2D(PhysicsProblem):
     """
-    Ecuación de Calor en 2D (Dependiente del tiempo).
-
-    Resuelve la Ecuación Diferencial Parcial (PDE):
-        u_t - alpha * (u_xx + u_yy) = 0
-        
-    Donde 'u' es la temperatura, 't' es tiempo, 'x,y' espacio y 'alpha' la difusividad.
+    Implementación de la Ecuación de Calor 2D dependiente del tiempo.
+    Ec: u_t - alpha * (u_xx + u_yy) = 0
     """
-
+    
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.alpha = tf.constant(self.domain_config['alpha'], dtype=tf.float32)
 
     def pde_residual(self, model: tf.keras.Model, xyt: tf.Tensor) -> tf.Tensor:
-        """
-        Calcula el residual de la PDE de calor.
-        
-        Args:
-            xyt: Tensor de forma (N, 3) conteniendo columnas [x, y, t].
-        """
+        """Calcula el residuo de la PDE de calor usando derivadas automáticas."""
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(xyt)
             u = model(xyt)
-            # Primeras derivadas (Jacobiano)
-            # Slicing: [:, 0:1] es du/dx, [:, 1:2] es du/dy, [:, 2:3] es du/dt
             u_x = tape.gradient(u, xyt)[:, 0:1]
             u_y = tape.gradient(u, xyt)[:, 1:2]
             u_t = tape.gradient(u, xyt)[:, 2:3]
-        
-        # Segundas derivadas (Hessiano diagonal)
         u_xx = tape.gradient(u_x, xyt)[:, 0:1]
         u_yy = tape.gradient(u_y, xyt)[:, 1:2]
         del tape
-
-        if u_xx is None or u_yy is None or u_t is None:
-            raise ValueError("El cálculo de derivadas para HEAT falló.")
-
+        if u_xx is None: raise ValueError("Fallo derivadas HEAT")
         return u_t - self.alpha * (u_xx + u_yy)
 
-    def analytical_solution(self, xyt) -> np.ndarray:
-        """
-        Solución analítica particular para una placa cuadrada con condiciones iniciales sinusoidales.
-        u(x,y,t) = exp(-alpha * pi^2 * t) * sin(pi*x) * sin(pi*y)
-        """
+    def analytical_solution(self, xyt) -> tf.Tensor:
+        """Solución analítica para una placa cuadrada con condiciones específicas."""
         xyt_val = xyt.numpy() if hasattr(xyt, 'numpy') else xyt
         x = xyt_val[:, 0:1]
         y = xyt_val[:, 1:2] 
         t = xyt_val[:, 2:3]
         alpha_val = self.alpha.numpy()
-        return np.exp(-alpha_val * np.pi**2 * t) * np.sin(np.pi * x) * np.sin(np.pi * y)
+        result = np.exp(-alpha_val * np.pi**2 * t) * np.sin(np.pi * x) * np.sin(np.pi * y)
+        return tf.constant(result, dtype=tf.float32)
 
-    def compute_slice_metrics(self, model: tf.keras.Model, t_fix: float = 0.5, resolution: int = 50) -> Tuple[float, np.ndarray, np.ndarray]:
-        """
-        Calcula métricas y datos para un corte de tiempo específico (Snapshot).
+    def _extract_data_with_mapping(self) -> Optional[Tuple]:
+        """Extrae columnas x, y, time, temperature del CSV."""
+        x_col = self.column_mapping.get('x')
+        y_col = self.column_mapping.get('y')
+        time_col = self.column_mapping.get('time')
+        temp_col = self.column_mapping.get('temperature')
+        
+        if not all([x_col, y_col, time_col, temp_col]):
+            raise ValueError("Faltan columnas para HEAT (x, y, time, temperature)")
+        
+        x_data = self.csv_data[x_col].values.reshape(-1, 1)
+        y_data = self.csv_data[y_col].values.reshape(-1, 1)
+        t_data = self.csv_data[time_col].values.reshape(-1, 1)
+        u_data = self.csv_data[temp_col].values.reshape(-1, 1)
+        
+        return (x_data.astype(np.float32), y_data.astype(np.float32), 
+                t_data.astype(np.float32), u_data.astype(np.float32))
 
-        Útil para visualizar el campo de temperatura en un instante 't' fijo.
-
-        Args:
-            model: Modelo entrenado.
-            t_fix (float): Instante de tiempo a evaluar.
-            resolution (int): Resolución de la malla espacial (N x N).
-
-        Returns:
-            Tuple: 
-                - mse (float): Error cuadrático medio en este corte.
-                - u_pred (ndarray): Matriz (N, N) con predicciones.
-                - u_true (ndarray): Matriz (N, N) con valores reales.
-        """
-        x_d = self.domain_config['x_domain']
-        y_d = self.domain_config['y_domain']
-        
-        # Crear grid espacial
-        x = np.linspace(x_d[0], x_d[1], resolution)
-        y = np.linspace(y_d[0], y_d[1], resolution)
-        X, Y = np.meshgrid(x, y)
-        
-        # Crear tensor input con t fijo
-        T = np.full_like(X, t_fix)
-        
-        # Aplanar y apilar: (N*N, 3) -> [x, y, t]
-        x_flat = X.flatten()
-        y_flat = Y.flatten()
-        t_flat = T.flatten()
-        
-        input_array = np.stack([x_flat, y_flat, t_flat], axis=1).astype(np.float32)
-        input_tensor = tf.convert_to_tensor(input_array)
-        
-        # Predicción
-        u_pred_flat = model(input_tensor).numpy()
-        u_true_flat = self.analytical_solution(input_tensor)
-        
-        # Calcular MSE
-        mse = np.mean((u_pred_flat - u_true_flat)**2)
-        
-        # Reshape para visualización (N, N)
-        return mse, u_pred_flat.reshape(resolution, resolution), u_true_flat.reshape(resolution, resolution)
-
-
-# ==============================================================================
-# --- FÁBRICA DE PROBLEMAS ---
-# ==============================================================================
-
+# --- Fabrica ---
 PROBLEMS: Dict[str, type] = {
     "SHO": SimpleHarmonicOscillator,
     "DHO": DampedHarmonicOscillator,
     "HEAT": HeatEquation2D
 }
-"""dict: Registro de clases de problemas físicos disponibles."""
 
-def get_physics_problem(problem_name: str, config: Dict[str, Any]) -> PhysicsProblem:
+def get_physics_problem(problem_name: str, config: Dict[str, Any], 
+                        csv_data: Optional[pd.DataFrame] = None, 
+                        column_mapping: Optional[Dict[str, str]] = None) -> PhysicsProblem:
     """
-    Fábrica que instancia un problema físico basado en su nombre.
+    Fábrica que instancia un problema físico.
 
     Args:
-        problem_name (str): Identificador ("SHO", "HEAT", etc.).
-        config (Dict[str, Any]): Configuración global a inyectar en la instancia.
+        problem_name (str): Nombre del problema ("SHO", "HEAT").
+        config (Dict[str, Any]): Configuración global.
+        csv_data (Optional[pd.DataFrame]): Datos externos.
+        column_mapping (Optional[Dict[str, str]]): Mapeo de columnas.
 
     Returns:
-        PhysicsProblem: Instancia configurada del problema solicitado.
-
-    Raises:
-        ValueError: Si el problema no existe en el registro `PROBLEMS`.
+        PhysicsProblem: Instancia configurada del problema.
     """
     problem_name = problem_name.upper()
     if problem_name not in PROBLEMS:
         raise ValueError(f"Problema '{problem_name}' no reconocido.")
-    return PROBLEMS[problem_name](config)
+    
+    problem_class = PROBLEMS[problem_name]
+    problem = problem_class(config)
+    
+    if csv_data is not None and column_mapping is not None:
+        problem.set_csv_data(csv_data, column_mapping)
+    
+    return problem
