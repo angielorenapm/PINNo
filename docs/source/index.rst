@@ -1,6 +1,6 @@
-.. PINNo Solver documentation master file
+.. PINNo documentation master file
 
-Bienvenido a la documentación de PINNo Solver
+Bienvenido a la documentación de PINNo
 =============================================
 
 .. toctree::
